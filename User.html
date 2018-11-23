@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Page Title</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>  
+<script type="text/javascript" src="_layouts/15/clienttemplates.js"></script>  
+<script type="text/javascript" src="_layouts/15/clientforms.js"></script>  
+<script type="text/javascript" src="_layouts/15/clientpeoplepicker.js"></script>  
+<script type="text/javascript" src="_layouts/15/autofill.js"></script>  
+</head>
+<body>
+<div>  
+    <label>User Name:</label>  
+    <div id="_UserName"></div>  
+    <input type="button" value="Click me" id="btnClickMe">
+</div> 
+<script>
+
+$(document).ready(function() {  
+    initializePeoplePicker("_UserName");  
+	$("#btnClickMe").click(ensureUser);
+   
+    debugger;
+});  
+var  UserId ;
+function initializePeoplePicker(peoplePickerElementId) {  
+    var schema = {};  
+    schema['PrincipalAccountType'] = 'User,DL,SecGroup,SPGroup';  
+    schema['SearchPrincipalSource'] = 15;  
+    schema['ResolvePrincipalSource'] = 15;  
+    schema['AllowMultipleValues'] = false;  
+    schema['MaximumEntitySuggestions'] = 50;  
+    schema['Width'] = '280px';  
+    this.SPClientPeoplePicker_InitStandaloneControlWrapper(peoplePickerElementId, null, schema);  
+}  
+function ensureUser() {  
+var peoplePickerTopDivId = $('#_UserName').children().children().attr('id');  
+var peoplePicker = this.SPClientPeoplePicker.SPClientPeoplePickerDict[peoplePickerTopDivId];  
+var users = peoplePicker.GetAllUserInfo();  
+   
+var arryuser = users[0];  
+if(arryuser) {  
+    var payload = { 'logonName': arryuser.Key};   
+    $.ajax({  
+        url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/ensureuser",  
+        type: "POST",  
+        async:false,  
+        contentType: "application/json;odata=verbose",  
+        data: JSON.stringify(payload),  
+        headers: {  
+            "X-RequestDigest": $("#__REQUESTDIGEST").val(),  
+            "accept": "application/json;odata=verbose"  
+        },  
+        success: function(data, status, xhr) {        
+        UserId = data.d.Id;            
+        },  
+        error: function(xhr, status, error) {      
+        }  
+    });   
+    }     
+    else {  
+        UserId = 0;  
+    }  
+} 
+$.ajax({  
+        url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/GetByTitle('Multi')/items",  
+        type: "POST",  
+        async: false,  
+        data: JSON.stringify({  
+            __metadata: {  
+                type: "SP.Data.MultiListItem"  
+            },  
+            Person: UserId  
+        }),  
+        headers: {    
+            "Accept": "application/json;odata=verbose",    
+            "Content-Type": "application/json;odata=verbose",    
+            "X-RequestDigest": $("#__REQUESTDIGEST").val(),    
+            "X-HTTP-Method": "POST",  
+        },  
+        success: function(data){  
+            alert("User Name is saved successfully");  
+        },  
+        error: function(error){  
+            alert(JSON.stringify(error));  
+       }  
+    });
+</script> 
+</body>
+</html>
