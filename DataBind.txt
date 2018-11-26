@@ -1,4 +1,4 @@
-https://sagaciousresearch.sharepoint.com/sites/dev/_api/web/lists/getbytitle('Leave%20_Balance')/items?$select=User_Id,Title&$filter=Created ge datetime'2018-01-01T00:00:00Z' and Created le datetime'2018-08-30T00:00:00Z'”
+https://.sharepoint.com/sites/dev/_api/web/lists/getbytitle('Leave%20_Balance')/items?$select=User_Id,Title&$filter=Created ge datetime'2018-01-01T00:00:00Z' and Created le datetime'2018-08-30T00:00:00Z'â€
 
 $(document).ready(function() {
  var RestUrl = "../_vti_bin/listdata.svc/Customers";
