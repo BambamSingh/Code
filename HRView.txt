@@ -1,0 +1,387 @@
+<script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.SPServices/2014.02/jquery.SPServices-2014.02.min.js"></script>
+<script language="javascript" type="text/javascript" src="/sites/dev/_layouts/15/clientpeoplepicker.js"></script>
+<script language="javascript" type="text/javascript" src="/sites/dev/_layouts/15/autofill.js"></script>
+<script language="javascript" type="text/javascript">
+
+$(document).ready(function() {
+    
+	$("input[Title='Department']").prop("disabled","disabled")
+	$("input[Title='Name']").prop("disabled","disabled")
+	$("div[Title='Approver_Mngr']").css("pointer-events","none")
+	$("input[Title='USer_Id']").prop("disabled","disabled")
+	//SP.SOD.executeFunc('sp.js', 'SP.ClientContext',getuserid());
+	getuserid();  
+});
+function PreSaveAction()
+{
+	var s_From_Date=$("input[Title='From_Date Required Field']").val();
+	var s_To_Date=$("input[Title='To_Date Required Field']").val();
+	var halfday=$("input[Title='Half_Day']").is(':checked');
+	var From_Date=new Date(s_From_Date);
+	var To_Date=new Date(s_To_Date);
+	var sFromdate=new Date(s_From_Date);
+	var stodate=new Date(s_To_Date);
+	var totalDays = Date.bizdays(From_Date, To_Date);
+	var business_day=totalDays;
+	if (stodate>sFromdate&&halfday==true)
+	{
+		alert("Half_Day can not be applied for multiple days");
+        return false;
+	}
+	From_Date=new Date(s_From_Date);
+	$.each(holiArray, function(index, value) 
+	{
+		if(value > From_Date && To_Date > value)
+		{
+				totalDays = totalDays - 1;
+		}
+	});
+	var leave_type=$("select[Title='Leave_Type Required Field']").val();
+	if(From_Date>To_Date){
+		alert("To_Date can not be before From_Date");
+        return false;
+	}
+	if((totalDays<=0) && (leave_type!="ED")&&(leave_type!="CF-Add")){
+		alert("You have applied 0 days as leaves!");
+        return false;
+	}
+	
+	if((leave_type=="ED" || leave_type=="CF-Add")&&(totalDays>0))
+	{
+		alert("You have applied Extra Day or compoff additions on businees days");
+        return false;
+	}
+		check_ED_Compoff_Status();
+		if(flag_CF_ED==1){
+					alert("Already Applied leave on same day");
+					return false;
+					flag_CF_ED=0;
+					}
+		check_balance(totalDays);
+		var balcheck=balance_check;
+		if(balcheck==false)
+		{
+		return balance_check;
+		}
+		if (already_present==1)
+		{
+		
+		alert("Ooops! You were present on one of these days");
+		already_present=0;
+		return false;
+		}
+		if(already_present_halfday==1&&halfday==false)
+		{
+		alert("Ooops! You were present halfday");
+		already_present_halfday=0;
+		return false;
+
+		}
+		return true;
+}
+	Date.bizdays= function(d1, d2){
+	    var bd= 0, dd,incr;
+	    while(d1<=d2){
+	    	incr=d1.getDate();
+	        dd= d1.getDay();
+	        d1.setDate(++incr);
+	        if(dd%6)++bd;
+	    }
+	    return bd;
+	}
+var flag_CF_ED=0;
+var user_sag_id;
+var balance_check;
+var user_sr_id;
+var already_present_halfday;
+function check_balance(num_of_days)
+{
+	var user_id = user_sag_id;	
+	var leave_type=$("select[Title='Leave_Type Required Field']").val();
+
+$.ajax({  
+            url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getbytitle('Leave _Balance')/items?$select=*&$filter=User_Id eq '"+user_id+"'",  
+            method: "GET",
+            async: false,  
+            headers: { "Accept": "application/json; odata=verbose" },  
+            success: function (data) {  
+                var items = data.d.results;  
+                for (var i = 0; i < items.length; i++) {  
+                	var leave_balance_id=items[i].ID;
+					var sl_balance=items[i].SL;
+					var pl_balance=items[i].PL;
+					var pat_bal=items[i].Paternity_x0020_Leave;
+					var mat_bal=items[i].Maternity_x0020_Leave;
+					var ber_bal=items[i].Bereavement_Leave;
+					var extraday=items[i].Extraday;	
+					var compoff=items[i].compoff;
+					var happynappy=	items[i].Happynapy;		
+				}
+				if(leave_type=="SL" && num_of_days<=sl_balance)
+				{
+					balance_check=true;
+				}
+				else {
+				if(leave_type=="SL")
+				{
+					alert("SL does not include sufficient Balance.Text");
+					balance_check=false;
+				}
+				}
+				if(leave_type=="PL" && num_of_days<=pl_balance)
+				{
+						balance_check=true;							
+		        }
+				else {
+				
+				if(leave_type=="PL")
+				{
+					alert("PL does not include sufficient Balance.");
+					balance_check=false;
+				}
+				}
+				if(leave_type=="CL" && num_of_days<=ber_bal)
+				{
+					balance_check=true;				}
+				else {
+				if(leave_type=="CL")
+				{
+					alert("CL does not include sufficient Balance.");
+					balance_check=false;
+				}
+				}
+				if(leave_type=="ML" && num_of_days<=mat_bal)
+				{
+					balance_check=true;				}
+				else {
+				if(leave_type=="ML")
+				{
+					alert("ML does not include sufficient Balance. Add in combination");
+					balance_check=false;
+				}
+				}
+				if(leave_type=="PML" && num_of_days<=pat_bal)
+				{
+					balance_check=true;
+				}
+				else
+				{
+					if(leave_type=="PML"){
+					alert("PML does not include sufficient Balance.");
+					balance_check=false;
+					}
+				}
+				if(leave_type=="CF-Utilize"&&num_of_days<=compoff)
+				{
+					balance_check=true;
+				}
+				else
+				{
+					if(leave_type=="CF-Utilize"){
+					alert("Compoff does not include sufficient Balance.");
+					balance_check=false;
+					}
+				}
+
+				if(leave_type=="HND"&&num_of_days<=happynappy)
+				{
+					balance_check=true;
+				}
+				else
+				{
+					if(leave_type=="HND"){
+					alert("You have already taken this leave.");
+					balance_check=false;
+					}
+				}
+				if(leave_type=="WFH")
+				{
+				balance_check=true;
+				}							
+            },  
+            error: function (data) {  
+                alert("Ooops, an error occured. Please try again");  
+                return false;
+            }  
+        });		
+}
+function check_ED_Compoff_Status()
+{
+		var siteurl = _spPageContextInfo.webAbsoluteUrl;
+		var userId = _spPageContextInfo.userId;
+		$.ajax({  
+            url: siteurl + "/_api/web/lists/getbytitle('Leave_Mgmt')/items?$select=ID,USer_Id,Leave_Type,Status,From_Date,To_Date,Approver_Mngr/Title, Author/Title&$expand=Approver_Mngr,Author&$filter= (Author/Id eq "+userId+")" ,  
+            method: "GET",
+            async: false,  
+            headers: { "Accept": "application/json; odata=verbose" },  
+            success: function (data) {  
+                var items = data.d.results;  
+            	for (var i = 0; i < items.length; i++) {  
+					var s_From_Date = new Date(items[i].From_Date);
+					var s_To_Date = new Date(items[i].To_Date);
+					var From_Date = new Date(items[i].From_Date);
+					var To_Date = new Date(items[i].To_Date);
+					var applied_From_Date=$("input[Title='From_Date Required Field']").val();
+					var applied_To_Date=$("input[Title='To_Date Required Field']").val();
+					var d1=new Date(applied_From_Date);
+					var d2=new Date(applied_To_Date);
+					var leave_status=items[i].Status;
+					var incr;
+					while(d1<=d2){
+	    				incr=d1.getDate();
+	        			if(d1>=From_Date && d1<=To_Date&&(leave_status=="Approve"||leave_status=="Pending"))
+	        			{
+	        			flag_CF_ED=1;
+	        			}
+	        			check_attendance_status(d1);
+	        			d1.setDate(++incr);
+	        			}					
+					}
+					},
+					error: function (error) {  
+                alert("Ooops, an error occured. Please try again"); 
+                return false; 
+            		}
+					});
+}
+function check_attendance_status(check_date)
+{
+		var siteurl = _spPageContextInfo.webAbsoluteUrl;
+		var attendance_date=check_date.toISOString();
+		attendance_date=attendance_date.substring(0,10);
+		var parts=attendance_date.split("-");
+		var day=parseInt(parts[2]);
+		day=day+1;
+		attendance_date=parts[0]+"-"+parts[1]+"-"+day;
+		var time_add="T07:00:00Z";
+		attendance_date_sharepoint_format=attendance_date+time_add;
+		$.ajax({  
+        	
+            url:siteurl + "/_api/web/lists/getbytitle('Attendance_Logs')/items?$select=*&$filter=(Employee_Id eq '"+user_sag_id+"') and (Attendance_Date eq datetime'"+attendance_date_sharepoint_format+"')",  
+            method: "GET",
+            async: false,  
+            headers: { "Accept": "application/json; odata=verbose" },  
+            success: function (data) {  
+                var items = data.d.results;  
+            	for (var i = 0; i < items.length; i++) {  
+					var status=items[i].Status;
+                 	var punchrecords=items[i].Punch_Records;
+                 	var duration=items[i].Duration;
+								
+			}
+			var lenght_itm=items.length; 
+			if (lenght_itm>0&&duration>=360&&status=="Present ")
+			{
+				already_present=1;
+			}
+			if (lenght_itm>0&&duration>=240&&duration<360&&status=="Present ")
+			{
+				already_present_halfday=1;
+			}
+			},
+            error: function (error) {  
+                alert("Ooops, an error occured. Please try again");  
+            }  
+        });  
+
+}
+var already_present;
+function getuserid() {
+ SP.SOD.executeFunc('sp.js', 'SP.ClientContext', function(){
+		SP.SOD.executeFunc('sp.js', 'SP.ClientContext');
+		//var c=new SP.ClientContext.get_current();
+		var userDepartment = $().SPServices.SPGetCurrentUser({
+   			 fieldName: "Department"});
+   		var userEmail = $().SPServices.SPGetCurrentUser({
+    		fieldName: "Email"});
+
+		var siteurl = _spPageContextInfo.webAbsoluteUrl; 
+        $.ajax({  
+            url: siteurl + "/_api/web/lists/getbytitle('UserDetail')/items?$select=Official_x0020_Email_x0020_ID,Team_x0020_Name,Reportstoemail/EMail,LinkTitle&$expand=Reportstoemail&$filter=Official_x0020_Email_x0020_ID eq '"+userEmail+"'",  
+            method: "GET",
+            async: false,  
+            headers: { "Accept": "application/json; odata=verbose" },  
+            success: function (data) {  
+                 var items = data.d.results; 
+				 
+				 for (var i = 0; i < items.length; i++) { 
+					var teamSRID = items[i].LinkTitle; 	
+					user_sag_id=teamSRID;				
+					var user_department=items[i].Team_x0020_Name;
+					user_sr_id=teamSRID;
+				}   
+				$("input[Title='Department']").val(user_department);
+				$("input[Title='USer_Id']").val(teamSRID);
+				var peApprover = SPClientPeoplePicker.SPClientPeoplePickerDict[$('[title="Approver_Mngr"]')[0].id];
+				peApprover.DeleteProcessedUser();	
+				var email = items[0].Reportstoemail.EMail;	
+				var userObj = {'Key': email }
+				peApprover.AddUnresolvedUser(userObj, true);		
+
+		    },  
+            error: function (data) {  
+                alert("Ooops, an error occured in fetching employee ID. Please try again");  
+            }  
+        });  
+        });
+    }  
+    var holiArray = [];
+	function getHolidays(){
+		$.ajax({  
+            url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getbytitle('Leave_Chart')/items?$select=L_Type,Count,H_Date&$filter=L_Type eq 'HL'",  
+            method: "GET",
+            async: false,  
+            headers: { "Accept": "application/json; odata=verbose" },  
+            success: function (data) {  
+                var items = data.d.results;  
+                for (var i = 0; i < items.length; i++) {  
+					var count = items[0].Count;
+					var hDate = new Date(items[i].H_Date);
+					holiArray.push(hDate);
+				}
+            },  
+            error: function (data) {  
+                alert("Ooops, an error occured. Please try again");  
+            }  
+        });
+	}
+	function check_leave_status(from_date,to_date,srid) {  
+		var siteurl = _spPageContextInfo.webAbsoluteUrl;
+		var userId = _spPageContextInfo.userId; 	
+        $.ajax({  
+        	
+            url: siteurl + "/_api/web/lists/getbytitle('Leave_Mgmt')/items?$select=ID,USer_Id,Leave_Type,From_Date,Status,To_Date,Approver_Mngr/Title, Author/Title&$expand=Approver_Mngr,Author&$filter=(To_Date ge datetime'"+attendancedate.toISOString()+"') and (From_Date le datetime'"+attendancedate.toISOString()+"') and (USer_Id eq '"+srid+"')" ,  
+            method: "GET",
+            async: false,  
+            headers: { "Accept": "application/json; odata=verbose" },  
+            success: function (data) {  
+                var items = data.d.results;  
+            	for (var i = 0; i < items.length; i++) {  
+					var s_Leave_Type = items[i].Leave_Type;
+					var status=items[i].Status;											
+			}
+			var lenght_itm=items.length; 
+			if (lenght_itm>0)
+			{
+				update_attendance_sattus(s_Leave_Type,status,id);
+			}
+			else
+			{
+			$.each(holiArray, function(index, value) 
+				{
+					if(value==attendancedate)
+					{
+						update_attendance_sattus("HL"," ",id);
+					}
+				});
+			}
+			},
+            error: function (error) {  
+                alert("Ooops, an error occured. Please try again");  
+            }  
+        });  
+	}
+
+	
+</script>  

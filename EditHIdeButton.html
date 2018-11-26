@@ -1,0 +1,30 @@
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script type="text/javascript">
+
+$(document).ready(function(){
+var siteurl = _spPageContextInfo.webAbsoluteUrl; 
+        $.ajax({  
+            url: siteurl + "/_api/web/currentuser",  
+            method: "GET",
+            async: false,  
+            headers: { "Accept": "application/json; odata=verbose" },  
+            success: function (data) {  
+                var items = data.d;				  
+				userEmail = items.Email; 
+				
+                               if(userEmail!= "jp@sagaciousresearch.onmicrosoft.com"&& userEmail!= "Deepika@sagaciousresearch.onmicrosoft.com")
+				{
+                 $("#s4-workspace").hide();  
+                      $(".ms-cui-topBar2").hide();
+                }
+            },  
+            error: function (data) {  
+                alert("Ooops, an error occured. Please try again");  
+            }
+           
+        });   $(".ms-link").show();  
+
+});
+</script>
+
+

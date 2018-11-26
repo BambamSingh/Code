@@ -1,0 +1,23 @@
+function GetUserGroups(){		
+			var siteurl = _spPageContextInfo.webAbsoluteUrl; 
+		    $.ajax({  
+		        url: siteurl + "/_api/web/currentuser/groups",  
+		        method: "GET",  
+		        headers: { "Accept": "application/json; odata=verbose" },  
+		        success: function (data) {  
+		            var items = data.d.results;
+					for (var i = 0; i < items.length; i++) { 
+						var grpName = items[i].Title;
+						if(grpName == "Development Site Owners"){
+							$("#O365_MainLink_Settings").css("display", "block")
+						}
+					}
+					if(_spPageContextInfo.isSiteAdmin){
+						$("#O365_MainLink_Settings").css("display", "block")
+					}               
+		        },  
+		        error: function (data) {  
+		            alert("Ooops, an error occured. Please try again");  
+		        }  
+		    });
+		}

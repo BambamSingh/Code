@@ -1,0 +1,51 @@
+do
+		{
+        $.ajax({  
+            url: listurl,  
+            method: "GET",
+            async: false,  
+            headers: { "Accept": "application/json; odata=verbose" },  
+            success: function (data) {  
+                var items = data.d.results;  
+                 if (data.d.__next) {
+              			listurl=data.d.__next;
+              			switchtonextresult=1;
+             	 }  
+             	 else {
+             	 switchtonextresult=0;
+             	 }
+
+            	for (var i = 0; i < items.length; i++) {  
+					s_Type_Expense = items[i].Type_Expense;
+					s_Department = items[i].Department;
+					s_Category = items[i].Category;
+					s_Requestor = items[i].Author.Title;
+					s_Amount = items[i].Amount;
+					s_Bill_Date = items[i].Bill_Date;
+					
+					var year = s_Bill_Date.split('-')[0];
+					var month = s_Bill_Date.split('-')[1];
+					var date = s_Bill_Date.split('-')[2];
+					var date2 =  parseInt(date, 10);
+					var billdate = (date2 +'-'+month+'-' + year);
+					
+					rows = "<tr><td>" + s_Type_Expense + "</td><td>" + s_Department + "</td><td>" + s_Category + "</td><td>" + s_Requestor + "</td><td>"+s_Amount +"</td><td>" + billdate + "</td><td><button type='button' value='View' style='background-color: #4CAF50; color: white;' onclick='showViewForm("+items[i].ID+")'>View</button></td><td><button type='button' value='Approve' style='background-color: #4CAF50; color: white;' bill-data='"+s_Amount+"' bill-date='"+s_Bill_Date+"' bill-dept='"+s_Department+"' bill-cat='"+s_Category+"' onclick='ApproveRequest("+items[i].ID+", this)'>Approve</button><br><button type='button' value='Reject' style='background-color: #4CAF50; color: white;margin-top:2px' onclick='RejectRequest("+items[i].ID+")'>Reject</button></td></tr>";
+
+					$(rows).appendTo("#listManager_Pending tbody");
+                } 
+				
+			},  
+            error: function (error) {  
+                alert("Ooops, an error occured. Please try again");  
+            }  
+        });  
+        }
+        while(switchtonextresult>0);
+        $('#listManager_Pending').tablesorter({
+				   widgets: ['zebra', 'filter'],
+				   headers: { 6: { sorter: false, filter: false }, 7: { sorter: false, filter: false }  },
+				   theme: 'blue'
+				}); 
+	}
+	
+	 

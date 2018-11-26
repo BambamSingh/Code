@@ -1,0 +1,130 @@
+<link rel="stylesheet" href="../SiteAssets/Sorter/theme.blue.css">
+<link rel="stylesheet" href="../SiteAssets/Sorter/theme.default.css">
+<script src="../SiteAssets/Sorter/jquery.tablesorter.js" type="text/javascript"></script>
+<script src="../SiteAssets/Sorter/jquery.tablesorter.widgets.js" type="text/javascript"></script>
+<script language="javascript" type="text/javascript">
+$(document).ready(function() {
+//$(".ms-list-itemLink-td").html("");
+//$("#Hero-WPQ1").html("");
+//$("#Hero-WPQ2").html("");
+//$("#Hero-WPQ3").html("");
+//$("#WebPartTitleWPQ1").html("<h4>Pending from Admin</h4>");
+//$("#WebPartWPQ2_ChromeTitle").html("<h4>Pending by IT</h4>");
+//$("#WebPartWPQ3_ChromeTitle").html("<h4>Processed by IT</h4>");
+//seteditbutton();
+$('.ms-itmHoverEnabled').each(function(i, obj) {
+var number=$(obj).find('.ms-number').text();
+    editformurl="https://sagaciousresearch.sharepoint.com/sites/dev/Lists/UserDetail/EditForm.aspx?ID="+number;
+	editbuttonhtml="<td><button name='button' value='OK' type='button' style = 'background-color: #4CAF50; color: white;' onclick=\"openeditDialog('"+editformurl+"');\">Edit</button></td>"
+	$(obj).append(editbuttonhtml);
+});
+	});	
+	function seteditbutton(){
+	var SearchFieldsTable = $(".ms-listviewtable tbody");
+	var trows = SearchFieldsTable[0].rows;
+	$.each(trows, function (index, row) {
+    	var id=$(row).attr("id");
+    	var parts=id.split(",");
+    	var idupdated=parts[1];
+    	var id_num=parseInt(idupdated); 	
+    	editbuttonhtml="<button name='button' value='OK' type='button' style = 'background-color: #4CAF50; color: white;' onclick='editform("+id_num+");'>Edit</button><br/><button name='button' value='OK' type='button' style = 'background-color: #4CAF50; color: white;' onclick='approverequest("+id_num+");'>Approve</button>";
+    	$(".ms-list-itemLink-td").html(editbuttonhtml);
+	});
+	}
+	function editform(number)
+{
+	editformurl="https://sagaciousresearch.sharepoint.com/sites/dev/Lists/UserDetail/EditForm.aspx?ID="+number;
+	openeditDialog(editformurl);
+}
+function approverequest(id)
+{
+			SP.SOD.executeFunc('sp.js', 'SP.ClientContext', function(){
+			var siteurl = _spPageContextInfo.webAbsoluteUrl;
+			var clientContext = new SP.ClientContext(siteurl);			
+			var lstRequest = clientContext.get_web().get_lists().getByTitle('UserDetail');
+			this.itemRequest = lstRequest.getItemById(parseInt(id));
+			itemRequest.set_item('Onboardingstatus','ProcessedbyAdmin');
+			itemRequest.update();
+			clientContext.executeQueryAsync(function succeeded(sender,args){
+				alert('Request Processed by admin successfully.');
+				window.location.reload();
+			},
+			function error(e,error){
+				alert(error.get_message());
+				
+			});
+		});
+}
+	function openeditDialog(pageUrl) { 
+		var options = {
+			url: pageUrl,
+			title: 'Edit Employee',
+			allowMaximize: false,
+			showClose: true,
+			width: 600,
+			height: 500,
+			dialogReturnValueCallback: CloseCallback
+		};
+		SP.SOD.execute('sp.ui.dialog.js', 'SP.UI.ModalDialog.showModalDialog', options);       
+	}
+	function CloseCallback(){
+		location.reload();
+	}
+	function openDialog(pageUrl) { 
+		var options = {
+			url: pageUrl,
+			title: 'User Detail',
+			allowMaximize: false,
+			showClose: true,
+			width: 600,
+			height: 500,
+			dialogReturnValueCallback: CloseCallback
+		};
+		SP.SOD.execute('sp.ui.dialog.js', 'SP.UI.ModalDialog.showModalDialog', options);       
+	}
+
+</script> 
+<style>
+.ms-webpartPage-root { border-spacing: 10px !important; padding:10px !important;}
+
+.ms-webpartzone-cell {padding:20px !important;}
+table {
+		border-collapse: collapse;
+		border: 1px solid gray;
+		width:100%;
+		
+		
+	}
+
+		th {
+		border: 1px solid gray;
+		color:white;
+		background-color:#00a1de!important;
+		padding: 10px 8px 10px 8px!important;		
+	}
+	
+	td {
+		border: 1px solid gray;
+		color:black;
+		background-color:white;
+		line-height: 14px; !important
+		Height: 3px; !important
+	}
+}
+input[type=button]
+	{
+		background-color: #4CAF50;
+		border: none;
+		color: white;
+		padding: 10px;
+		text-decoration: none;
+		margin: 4px 2px;
+		cursor: pointer;
+	}
+	.ms-vh2-nofilter, .ms-vh2-nofilter-notextalign, .ms-vh2-nofilter-perm, .ms-vh a, .ms-vh2, .ms-vh2 a {
+    
+    color: white;
+}
+	
+</style>
+<div class="column"></div>

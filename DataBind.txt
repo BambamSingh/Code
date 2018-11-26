@@ -1,0 +1,46 @@
+https://sagaciousresearch.sharepoint.com/sites/dev/_api/web/lists/getbytitle('Leave%20_Balance')/items?$select=User_Id,Title&$filter=Created ge datetime'2018-01-01T00:00:00Z' and Created le datetime'2018-08-30T00:00:00Z'”
+
+$(document).ready(function() {
+ var RestUrl = "../_vti_bin/listdata.svc/Customers";
+ $.ajax({
+ url: RestUrl,
+ method: "GET",
+ headers: {
+ "accept": "application/json;odata=verbose",
+ },
+ success: function(data) {
+ if (data.d.results.length > 0) {
+ 
+ $('#CustomerGrid').append(GenerateTableFromJson(data.d.results));
+
+ var oTable = $('#CustomerRecordsTable').dataTable({
+ "iDisplayLength": 5,
+ "aLengthMenu": [
+ [5, 10, 30, 50],
+ [5, 10, 30, 50]
+ ],
+ "sPaginationType": "full_numbers"
+ });
+ } else {
+ $('#CustomerGrid').append("<span>No Customer Records Found.</span>");
+ }
+ },
+ error: function(data) {
+ $('#CustomerGrid').append("<span>Error Retreiving Customer Records. Error : " + JSON.stringify(data) + "</span>");
+ }
+ });
+ function GenerateTableFromJson(objArray) {
+ var tableContent = '<table id="CustomerRecordsTable" style="width:100%"><thead><tr><td></td>' + '<td>Customer Name</td>' + '<td>Address</td>' + '<td>Home Phone</td>' + '<td>Mobile Number</td>' + '<td>Email</td>' + '</tr></thead><tbody>';
+ for (var i = 0; i < objArray.length; i++) {
+ tableContent += '<tr>';
+ tableContent += '<td>' + objArray[i].Id + '</td>';
+ tableContent += '<td>' + objArray[i].CustomerName + '</td>';
+ tableContent += '<td>' + objArray[i].Address + '</td>';
+ tableContent += '<td>' + objArray[i].HomePhone + '</td>';
+ tableContent += '<td>' + objArray[i].MobileNumber + '</td>';
+ tableContent += '<td>' + objArray[i].Email + '</td>';
+ tableContent += '</tr>';
+ }
+ return tableContent;
+ }
+ });
