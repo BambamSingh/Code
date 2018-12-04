@@ -161,3 +161,168 @@ th {
   </div>
  </body>
   </html>
+ //////////////////////////////////////////////////////////////////   
+    <!-- <!DOCTYPE html>  
+<html>  
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>  
+<script>  
+    var spApp = angular.module('spApp', []);  
+    var switchtonextresult;
+    spApp.controller('spListCtrl', function($scope, $http)   
+     { 
+         var listurl="https://sagaciousresearch.sharepoint.com/sites/dev/_api/web/lists/getByTitle('Leave%20_Balance')/items";
+         do{ 
+        $http  
+        ({  
+            method: "GET",  
+            url:listurl,  
+            headers:   
+            {  
+                "Accept": "application/json;odata=verbose"  
+            }  
+        }).success(function(data, status, headers, config)   
+        {  
+            $scope.xData = data.d.results;  
+            if (data.d.__next) {
+              			listurl=data.d.__next;
+              			switchtonextresult=1;
+             	 }  
+             	 else {
+             	 switchtonextresult=0;
+             	 }
+           console.log(data.d.results);  
+        }).error(function(data, status, headers, config) {});  
+         $scope.redirectToEditRoute = function(x) {
+        $location.path("/Edit/" + x.User_Id);
+    }
+     }
+   
+    while(switchtonextresult>0){}
+  });
+</script>  
+<style>  
+table, td, th {  
+    border: 1px solid green;  
+}  
+  
+th {  
+    background-color: green;  
+    color: white;  
+    width:50px;
+}  
+</style>
+<div ng-app="spApp">  
+    <div ng-controller="spListCtrl">  
+        <p><input type="text" ng-model="search.User_Id"></p>  
+        <p><input type="text" ng-model="search.LastDatePUCDone"></p>  
+        <table witdh="100%" cellpadding="5" cellspacing="5">  
+            <thead>  
+              
+                <th>User_Id</th>  
+                <th>UserName</th>  
+                <th>SL</th>  
+                <th>PL</th>  
+                <th>Paternity_x0020_Leave</th>
+                <th>Maternity_x0020_Leave</th>
+                <th>Bereavement_Leave</th>
+                <th>Extraday</th>
+                <th>compoff</th>
+                <th>Happynapy</th>
+                <th>
+                   Action
+                </th>
+             
+                </tr>  
+            </thead>  
+            <tbody>  
+                <tr ng-repeat="x in xData">  
+                    <td>{{x.User_Id}}</td>  
+                    <td>{{x.UserName}}</td>  
+                    <td>{{x.SL}}</td>  
+                    <td>{{x.PL}}</td>
+                    <td>{{x.Paternity_x0020_Leave}}</td>    
+                   <td>{{x.Maternity_x0020_Leave}}</td>
+                   <td>{{x.Bereavement_Leave}}</td>
+                   <td>{{x.Extraday}}</td>
+                   <td>{{x.compoff}}</td>
+                   <td>{{x.Happynapy}}</td>
+                   <td>
+                        <div class="buttons">
+                              <button class="btn btn-primary" ng-click="editEmployee(x)">Edit</button>
+                              <button class="btn btn-danger" ng-click="deleteEmployee(x)">Delete</button>
+                         </div>
+                   </td>
+
+                </tr>  
+            </tbody>  
+        </table>  
+    </div>  
+</div>  
+  
+</html> -->
+ <!DOCTYPE html> 
+<html>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+ <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>  
+ <script type="text/javascript" src="https://sagaciousresearch.sharepoint.com/sites/dev/SiteAssets/DataBind.js"></script>
+ <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+ <title>Angular Custom Table Edit</title>
+ <style>
+ #mytable input{
+ width:100%;
+ }
+</style>
+</head>
+<body ng-app="myApp" ng-controller="MainController">
+  <h1 align="center" style="color:#428bca">Custom Table Edit </h1>
+<div class="container">
+ <div class="row">
+ <button type="button" style="float:right;margin-bottom: 10px;" class="btn btn-info " ng-click="addEmployee()">Add Employee</button>
+ <div class="col-md-12">
+ <div class="table-responsive">
+      <form id="empform" ng-submit="submitEmployee()">
+          <table id="mytable" class="table table-bordered">
+              <thead>
+                 <th style="width:5%;">UserId</th>
+                  <th style="width:10%;">UserName</th>
+                  <th style="width:15%;">SL</th>
+                  <th style="width:10%;">PL</th>
+                  <th style="width:10%;">Paternity_Leave</th>
+                  <th style="width:15%;">Maternity_x0020_Leave</th>
+                  <th style="width:15%;">Extraday</th>
+                  <th style="width:25%;">Compoff</th>
+                  <th style="width:25%;">Happy_Nappy</th> 
+                 </thead>
+            <tbody>
+                <tr ng-repeat="emp in empoyees">
+                   <td>{{$index+1}}</td>
+                   <td><input name="User_Id{{$index}}" ng-model="emp.User_Id"  ng-disabled="!enabledEdit[{{$index}}]"/> </td>
+                   <td><input name="UserName{{$index}}" ng-model="emp.UserName" ng-disabled="!enabledEdit[{{$index}}]" /> </td>
+                    <td><input name="SL{{$index}}" ng-model="emp.SL" ng-disabled="!enabledEdit[{{$index}}]"/></td>
+                    <td><input name="PL{{$index}}" ng-model="emp.PL" ng-disabled="!enabledEdit[{{$index}}]"</td>
+                    <td><input name="Paternity_x0020_Leave{{$index}}" ng-model="emp.Paternity_x0020_Leave" ng-disabled="!enabledEdit[{{$index}}]"/></td>
+                    <td><input name="Maternity_x0020_Leave{{$index}}" ng-model="emp.Maternity_x0020_Leave" ng-disabled="!enabledEdit[{{$index}}]"/></td>
+                     <td><input name="Extraday{{$index}}" ng-model="emp.Extraday" ng-disabled="!enabledEdit[{{$index}}]"/></td>
+                     <td><input name="compoff{{$index}}" ng-model="emp.compoff" ng-disabled="!enabledEdit[{{$index}}]"/></td>
+                     <td><input name="Happynapy{{$index}}" ng-model="emp.Happynapy" ng-disabled="!enabledEdit[{{$index}}]"/></td>
+                     <td >
+                         <div class="buttons">
+                              <button class="btn btn-primary" ng-click="editEmployee($index)">Edit</button>
+                              <button class="btn btn-danger" ng-click="deleteEmployee($index)">Delete</button>
+                         </div> 
+                     </td>
+                  </tr>
+         </tbody>
+     </table>
+    <input type="submit" class="btn btn-primary" value="Submit" />
+ </form>
+ <div class="clearfix"></div>
+ </div>
+ </div>
+  </div>
+ </body>
+  </html>
+    
