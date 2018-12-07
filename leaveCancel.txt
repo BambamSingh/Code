@@ -1,0 +1,945 @@
+<link rel="stylesheet" href="../SiteAssets/Sorter/theme.blue.css">
+<link rel="stylesheet" href="../SiteAssets/Sorter/theme.default.css">
+
+<script src="../SiteAssets/Sorter/jquery.tablesorter.js" type="text/javascript"></script>
+<script src="../SiteAssets/Sorter/jquery.tablesorter.widgets.js" type="text/javascript"></script>
+
+<script language="javascript" type="text/javascript">
+
+
+$(document).ready(function() {
+	
+getListItems();  
+getListItemsManagerView_Pending();  
+getListItemsManagerView_Approve(); 
+getListItemsManagerView_Reject(); 
+getListItemsManagerView_Reimbursed(); 
+
+});
+var dataSearched_global=[];
+	
+	function getListItems() {  
+		var siteurl = _spPageContextInfo.webAbsoluteUrl;
+		var userId = _spPageContextInfo.userId; 	
+		var dataSearched = [];
+		var ec_Department;
+		var ec_Exp_Type;
+		var ec_Approver;
+		var ec_Jan;
+		var ec_Feb;
+		
+        $.ajax({  
+            url: siteurl + "/_api/web/lists/getbytitle('Expense_Category')/items?$select=Department,Yearly,Balance,ID,Exp_Type,Final_Approver/Id,ch4m,jjvx,*&$expand=Final_Approver&$filter=Final_Approver/Id eq "+userId,  
+            method: "GET",
+            async: false,  
+            headers: { "Accept": "application/json; odata=verbose" },  
+            success: function (data) {  
+                var items = data.d.results;  
+            	for (var i = 0; i < items.length; i++) {  
+					dataSearched_global.push({'Department':items[i].Department, 'Exp_Type':encodeURIComponent(items[i].Exp_Type), 'Approver':items[i].Final_Approver.Id, 'Jan':items[i].ch4m, 'Feb':items[i].jjvx, 'Mar':items[i].Mar, 'Apr':items[i].Apr, 'May':items[i].May, 'Jun':items[i].Jun, 'Jul':items[i].Jul, 'Aug':items[i].Aug, 'Sep':items[i].Sep, 'Oct':items[i].Oct, 'Nov':items[i].Nov, 'Dec':items[i].Dec,'Balance':items[i].Balance,'Yearly':items[i].Yearly,'ID':items[i].ID});					
+                } 
+				getListFilterValues (dataSearched_global); 
+			},  
+            error: function (error) {  
+                alert("Ooops, an error occured. Please try again");  
+            }  
+        });  
+		
+    } 
+	
+	var currentBalance = [];
+	var previousBalance = [];
+	function getListFilterValues(dataSearched) {  
+		var f_Department="";
+		var f_Exp_Type="";
+		var f_Approver="";
+		var f_Jan=0;
+		var f_Jan_u=0;
+		var f_Feb_u=0;
+		var f_Feb=0;
+		var f_Mar=0;
+		var f_Mar_u=0;
+		var f_Apr_u=0;
+		var f_Apr=0;
+		var f_May=0;
+		var f_May_u=0;
+		var f_Jun_u=0;
+		var f_Jun=0;
+		var f_Jul=0;
+		var f_Jul_u=0;
+		var f_Aug_u=0;
+		var f_Aug=0;
+		var f_Sep=0;
+		var f_Sep_u=0;
+		var f_Oct_u=0;
+		var f_Oct=0;
+		var f_Nov=0;
+		var f_Nov_u=0;
+		var f_Dec_u=0;
+		var f_Dec=0;
+		
+		var currentMonth = 0;
+		var prevMonth = 0;
+		var currentMonth_u = 0;
+		var prevMonth_u = 0;
+
+		var sum_data=0;
+		var balance_cate_yearly;
+		var yearly_flag;
+		var siteurl = _spPageContextInfo.webAbsoluteUrl;
+		console.log(dataSearched.length);
+		
+		for (var a = 0; a < dataSearched.length; a++) {  
+			
+			f_Department = dataSearched[a].Department;
+			f_Exp_Type = dataSearched[a].Exp_Type;
+			f_Approver = dataSearched[a].Approver;
+			balance_cate_yearly=dataSearched[a].Balance;
+			yearly_flag=dataSearched[a].Yearly;			
+			currentMonth = 0;
+			prevMonth = 0;
+			
+			var curDate = new Date();
+			var curMonth = curDate.getMonth();
+			switch(curMonth) {
+			    case 0:
+			    	currentMonth = dataSearched[a].Jan==null?0:dataSearched[a].Jan;
+			        break;
+			    case 1:
+			    	currentMonth = dataSearched[a].Feb==null?0:dataSearched[a].Feb;
+			        break;
+			    case 2:
+			    	currentMonth = dataSearched[a].Mar==null?0:dataSearched[a].Mar;
+			        break;
+			    case 3:
+			    	currentMonth = dataSearched[a].Apr==null?0:dataSearched[a].Apr;
+			        break;
+			    case 4:
+			    	currentMonth = dataSearched[a].May==null?0:dataSearched[a].May;
+			        break;
+			    case 5:
+			    	currentMonth = dataSearched[a].Jun==null?0:dataSearched[a].Jun;
+			        break;
+			    case 6:
+			        currentMonth = dataSearched[a].Jul==null?0:dataSearched[a].Jul;
+			        break;
+			    case 7:
+			    	currentMonth = dataSearched[a].Aug==null?0:dataSearched[a].Aug;
+			        break;
+			    case 8:
+			    	currentMonth = dataSearched[a].Sep==null?0:dataSearched[a].Sep;
+			        break;
+			    case 9:
+			    	currentMonth = dataSearched[a].Oct==null?0:dataSearched[a].Oct;
+			        break;
+			    case 10:
+			    	currentMonth = dataSearched[a].Nov==null?0:dataSearched[a].Nov;
+			        break;
+			    case 11:
+			    	currentMonth = dataSearched[a].Dec==null?0:dataSearched[a].Dec;
+			        break;
+			}
+			switch(curMonth-1) {
+			    case 0:
+			    	prevMonth = dataSearched[a].Jan==null?0:dataSearched[a].Jan;
+			        break;
+			    case 1:
+			    	prevMonth = dataSearched[a].Feb==null?0:dataSearched[a].Feb;
+			        break;
+			    case 2:
+			    	prevMonth = dataSearched[a].Mar==null?0:dataSearched[a].Mar;
+			        break;
+			    case 3:
+			    	prevMonth = dataSearched[a].Apr==null?0:dataSearched[a].Apr;
+			        break;
+			    case 4:
+			    	prevMonth = dataSearched[a].May==null?0:dataSearched[a].May;
+			        break;
+			    case 5:
+			    	prevMonth = dataSearched[a].Jun==null?0:dataSearched[a].Jun;
+			        break;
+			    case 6:
+			        prevMonth = dataSearched[a].Jul==null?0:dataSearched[a].Jul;
+			        break;
+			    case 7:
+			    	prevMonth = dataSearched[a].Aug==null?0:dataSearched[a].Aug;
+			        break;
+			    case 8:
+			    	prevMonth = dataSearched[a].Sep==null?0:dataSearched[a].Sep;
+			        break;
+			    case 9:
+			    	prevMonth = dataSearched[a].Oct==null?0:dataSearched[a].Oct;
+			        break;
+			    case 10:
+			    	prevMonth = dataSearched[a].Nov==null?0:dataSearched[a].Nov;
+			        break;
+			    case 11:
+			    	prevMonth = dataSearched[a].Dec==null?0:dataSearched[a].Dec;
+			        break;
+			}
+						
+			f_Jan_u=0;
+			f_Feb_u=0;
+			f_Mar_u=0;
+			f_Apr_u=0;
+			f_May_u=0;
+			f_Jun_u=0;
+			f_Jul_u=0;
+			f_Aug_u=0;
+			f_Sep_u=0;
+			f_Oct_u=0;
+			f_Nov_u=0;
+			f_Dec_u=0;
+			
+			currentMonth_u = 0;
+			prevMonth_u = 0;
+			//const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+			
+			//const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", December"];		
+				$.ajax({  
+					url: siteurl + "/_api/web/lists/getbytitle('Expense_Detail')/items?$select=Department,Category,Approver/Id,Author/Id,Amount,Bill_Date&$expand=Approver,Author&$filter=(Approver/Id eq " + f_Approver + ") and (Department eq '" + f_Department + "') and (Category eq '" + f_Exp_Type + "') and ((Status eq 'Approve') or (Status eq 'Approve-Adm'))",
+					method: "GET",
+					async: false,  
+					headers: { "Accept": "application/json; odata=verbose" },  
+					success: function (data) {  
+						var items = data.d.results;  
+						for (var i = 0; i < items.length; i++) {  
+							if(items[i].Bill_Date !=null){
+								var t = new Date(items[i].Bill_Date);
+								//var month = monthNames[t.getMonth()];
+								var incr=t.getDate();
+	        					//dd= d1.getDay();
+	        					t.setDate(++incr);
+
+								var month = t.getMonth();
+								var d = new Date();
+								var m = d.getMonth()
+								
+								if(month == m){
+									switch(month) {
+									    case 0:
+									    	currentMonth = dataSearched[a].Jan==null?0:dataSearched[a].Jan;
+									        currentMonth_u += items[i].Amount;
+									        break;
+									    case 1:
+									    	currentMonth = dataSearched[a].Feb==null?0:dataSearched[a].Feb;
+									        currentMonth_u += items[i].Amount;
+									        break;
+									    case 2:
+									    	currentMonth = dataSearched[a].Mar==null?0:dataSearched[a].Mar;
+									        currentMonth_u += items[i].Amount;
+									        break;
+									    case 3:
+									    	currentMonth = dataSearched[a].Apr==null?0:dataSearched[a].Apr;
+									        currentMonth_u += items[i].Amount;
+									        break;
+									    case 4:
+									    	currentMonth = dataSearched[a].May==null?0:dataSearched[a].May;
+									        currentMonth_u += items[i].Amount;
+									        break;
+									    case 5:
+									    	currentMonth = dataSearched[a].Jun==null?0:dataSearched[a].Jun;
+									        currentMonth_u += items[i].Amount;
+									        break;
+									    case 6:
+									    	currentMonth = dataSearched[a].Jul==null?0:dataSearched[a].Jul;
+									        currentMonth_u += items[i].Amount;
+									        break;
+									    case 7:
+									    	currentMonth = dataSearched[a].Aug==null?0:dataSearched[a].Aug;
+									        currentMonth_u += items[i].Amount;
+									        break;
+									    case 8:
+									    	currentMonth = dataSearched[a].Sep==null?0:dataSearched[a].Sep;
+									        currentMonth_u += items[i].Amount;
+									        break;
+									    case 9:
+									    	currentMonth = dataSearched[a].Oct==null?0:dataSearched[a].Oct;
+									        currentMonth_u += items[i].Amount;
+									        break;
+									    case 10:
+									    	currentMonth = dataSearched[a].Nov==null?0:dataSearched[a].Nov;
+									        currentMonth_u += items[i].Amount;
+									        break;
+									    case 11:
+									    	currentMonth = dataSearched[a].Dec==null?0:dataSearched[a].Dec;
+									        currentMonth_u += items[i].Amount;
+									        break;
+									}
+								}
+								else if(month == (m-1)){
+									switch(month) {
+									    case 0:
+									    	prevMonth = dataSearched[a].Jan==null?0:dataSearched[a].Jan;
+									        prevMonth_u += items[i].Amount;
+									        break;
+									    case 1:
+									    	prevMonth = dataSearched[a].Feb==null?0:dataSearched[a].Feb;
+									        prevMonth_u += items[i].Amount;
+									        break;
+									    case 2:
+									    	prevMonth = dataSearched[a].Mar==null?0:dataSearched[a].Mar;
+									        prevMonth_u += items[i].Amount;
+									        break;
+									    case 3:
+									    	prevMonth = dataSearched[a].Apr==null?0:dataSearched[a].Apr;
+									        prevMonth_u += items[i].Amount;
+									        break;
+									    case 4:
+									    	prevMonth = dataSearched[a].May==null?0:dataSearched[a].May;
+									        prevMonth_u += items[i].Amount;
+									        break;
+									    case 5:
+									    	prevMonth = dataSearched[a].Jun==null?0:dataSearched[a].Jun;
+									        prevMonth_u += items[i].Amount;
+									        break;
+									    case 6:
+									    	prevMonth = dataSearched[a].Jul==null?0:dataSearched[a].Jul;
+									        prevMonth_u += items[i].Amount;
+									        break;
+									    case 7:
+									    	prevMonth = dataSearched[a].Aug==null?0:dataSearched[a].Aug;
+									        prevMonth_u += items[i].Amount;
+									        break;
+									    case 8:
+									    	prevMonth = dataSearched[a].Sep==null?0:dataSearched[a].Sep;
+									        prevMonth_u += items[i].Amount;
+									        break;
+									    case 9:
+									    	prevMonth = dataSearched[a].Oct==null?0:dataSearched[a].Oct;
+									        prevMonth_u += items[i].Amount;
+									        break;
+									    case 10:
+									    	prevMonth = dataSearched[a].Nov==null?0:dataSearched[a].Nov;
+									        prevMonth_u += items[i].Amount;
+									        break;
+									    case 11:
+									    	prevMonth = dataSearched[a].Dec==null?0:dataSearched[a].Dec;
+									        prevMonth_u += items[i].Amount;
+									        break;
+									}
+								}
+							}
+						} 
+						
+					},  
+					error: function (error) {  
+						alert('Error getListItems :: '+ JSON.stringify(error));  
+					}  
+				});
+				
+				currentBalance.push({'Department':f_Department, 'Exp_Type':decodeURIComponent(f_Exp_Type), 'Balance': (currentMonth-currentMonth_u) });
+				previousBalance.push({'Department':f_Department, 'Exp_Type':decodeURIComponent(f_Exp_Type), 'Balance': (prevMonth-prevMonth_u) });
+				rows = "<tr><td>" + f_Department + "</td><td>" + decodeURIComponent(f_Exp_Type) + "</td><td>" + currentMonth + "</td><td>" + currentMonth_u + "</td><td>"+(currentMonth-currentMonth_u)+"</td><td>" + prevMonth + "</td><td>" + prevMonth_u + "</td><td>"+(prevMonth-prevMonth_u)+"</td></tr>";
+				
+				$(rows).appendTo("#list tbody");
+		} 
+			
+    }
+
+    function getListItemsManagerView_Pending() {  
+		var siteurl = _spPageContextInfo.webAbsoluteUrl;
+		var userId = _spPageContextInfo.userId; 	
+		var s_Type_Expense;
+		var s_Department;
+		var s_Category;
+		var s_Requestor;
+		var s_Amount;
+		var s_Bill_Date;
+		$("#listManager_Pending tbody").html('')
+        $.ajax({  
+            url: siteurl + "/_api/web/lists/getbytitle('Expense_Detail')/items?$select=ID,Type_Expense,Department,Category,Author/Title,Amount,Bill_Date&$expand=Author&$filter= (Approver/Id eq "+userId+") and (Status eq 'Pending')" ,  
+            method: "GET",
+            async: false,  
+            headers: { "Accept": "application/json; odata=verbose" },  
+            success: function (data) {  
+                var items = data.d.results;  
+            	for (var i = 0; i < items.length; i++) {  
+					s_Type_Expense = items[i].Type_Expense;
+					s_Department = items[i].Department;
+					s_Category = items[i].Category;
+					s_Requestor = items[i].Author.Title;
+					s_Amount = items[i].Amount;
+					s_Bill_Date = items[i].Bill_Date;
+					var year = s_Bill_Date.split('-')[0];
+					var month = s_Bill_Date.split('-')[1];
+					var date = s_Bill_Date.split('-')[2];
+					var date2 =  parseInt(date, 10);
+					month2=parseInt(month,10);
+					if (date2<30)
+					{
+					date2=date2+1;
+					}
+					else if (date2==30 && (month2==1 || month2==3 || month2==5 || month2==7 ||month2==8 || month2==10 || month2==12))
+					{
+						date2=date2+1;
+					}
+					else
+					{
+						date2=1;
+						month=month2+1;
+					}
+					var billdate = (date2 +'-'+month+'-' + year);
+					
+					rows = "<tr><td>" + s_Type_Expense + "</td><td>" + s_Department + "</td><td>" + s_Category + "</td><td>" + s_Requestor + "</td><td>"+s_Amount +"</td><td>" + billdate + "</td><td><button type='button' value='View' style='background-color: #4CAF50; color: white;' onclick='showViewForm("+items[i].ID+")'>View</button></td><td><button type='button' value='Approve' style='background-color: #4CAF50; color: white;' bill-data='"+s_Amount+"' bill-date='"+s_Bill_Date+"' bill-dept='"+s_Department+"' bill-cat='"+s_Category+"' onclick='ApproveRequest("+items[i].ID+",\""+s_Category+"\", this)'>Approve</button><br><button type='button' value='Reject' style='background-color: #4CAF50; color: white;margin-top:2px' onclick='RejectRequest("+items[i].ID+")'>Reject</button></td></tr>";
+
+					$(rows).appendTo("#listManager_Pending tbody");
+                } 
+				$('#listManager_Pending').tablesorter({
+				   widgets: ['zebra', 'filter'],
+				   headers: { 6: { sorter: false, filter: false }, 7: { sorter: false, filter: false }  },
+				   theme: 'blue'
+				}); 
+			},  
+            error: function (error) {  
+                alert("Ooops, an error occured. Please try again");  
+            }  
+        });  
+	}
+	
+	 
+	function showViewForm(id){
+		var path = _spPageContextInfo.webAbsoluteUrl + "/Lists/Expense_Detail/DispForm.aspx?ID="+id+"&isdlg=1"
+		var options = {  
+		    title: "Expense Detail",    
+		    url: path  
+		};  
+		SP.SOD.execute('sp.ui.dialog.js', 'SP.UI.ModalDialog.showModalDialog', options);
+	}
+	
+	function ApproveRequest(id,category, e)
+	{
+		var catid;
+		var siteurl = _spPageContextInfo.webAbsoluteUrl;
+		var balance_check=0;
+		var year_flag;
+		var billAmt = e.getAttribute("bill-data");
+		var billDt = e.getAttribute("bill-date");
+		var billDept = e.getAttribute("bill-dept");
+		var billCat = e.getAttribute("bill-cat");
+		var bDate = new Date(billDt);
+		var incr=bDate.getDate();
+	   // dd= d1.getDay();
+	    bDate.setDate(++incr);
+	    
+		var tDate = new Date();
+		var balance = 0;
+		for (var z = 0; z < dataSearched_global.length; z++) 
+		{
+		if (dataSearched_global[z].Exp_Type==billCat && dataSearched_global[z].Department)
+		{
+			balance_check=dataSearched_global[z].Balance;
+			year_flag=dataSearched_global[z].Yearly;
+			catid=dataSearched_global[z].ID;
+		}
+		}
+		if(tDate.getMonth() == bDate.getMonth()){
+		if (year_flag)
+					{
+						balance = balance_check- billAmt;
+					}
+			else {
+			for (var a = 0; a < currentBalance.length; a++) {  
+				if(currentBalance[a].Department == billDept && currentBalance[a].Exp_Type == billCat){
+					
+					
+						balance = currentBalance[a].Balance - billAmt;
+						break;
+					
+				}
+			}
+			}
+		}
+		else{
+			if (year_flag)
+					{
+						balance = balance_check- billAmt;
+					}
+			else {
+
+			for (var a = 0; a < previousBalance.length; a++) {  
+				if(previousBalance[a].Department == billDept && previousBalance[a].Exp_Type == billCat){
+					balance = previousBalance[a].Balance - billAmt;
+					break;
+				}
+			}
+			}
+		}
+		 
+		if(balance < 0){
+			alert("Expense cannot be approved, limit exceeded.")
+		}
+		else{
+			SP.SOD.executeFunc('sp.js', 'SP.ClientContext', function(){
+				var clientContext = new SP.ClientContext(siteurl);
+				var lstRequest = clientContext.get_web().get_lists().getByTitle('Expense_Detail');
+				var itemRequest = lstRequest.getItemById(parseInt(id));
+				if(category=="Food" || category=="Cab")
+				{
+				itemRequest.set_item('Status','Approved-Adm');
+				}
+				else
+				{
+				itemRequest.set_item('Status','Approve');
+				}
+				
+				itemRequest.update();
+				var success_flag=1;
+				clientContext.executeQueryAsync(function succeeded(sender,args){
+				if(year_flag){
+					var lstRequest1=clientContext.get_web().get_lists().getByTitle('Expense_Category');
+					var itemRequest1 = lstRequest1.getItemById(parseInt(catid)); 
+					
+					itemRequest1.set_item('Balance',balance);
+					itemRequest1.update();
+				
+						clientContext.executeQueryAsync(function succeeded(sender,args){
+						
+						
+						},
+						function error(e,error){
+							alert(error.get_message());
+							success_flag=0;
+							itemRequest.set_item('Status','Pending');
+							itemRequest.update();
+							clientContext.executeQueryAsync(function succeeded(sender,args){
+							alert('Request could not be completed. Please try again');
+							},
+							function error(e,error){
+							alert('Oops. There is an error. Please contact portal administrator')
+
+							});
+							
+					
+							});
+							}
+							if(success_flag)
+							{
+								alert('Request Approved successfully.');
+								window.location.reload();
+						}					
+					},
+				function error(e,error){
+					alert(error.get_message());
+					
+				});
+			});
+		}
+	}
+	
+	function RejectRequest(id)
+	{
+		SP.SOD.executeFunc('sp.js', 'SP.ClientContext', function(){
+			var siteurl = _spPageContextInfo.webAbsoluteUrl;
+			var clientContext = new SP.ClientContext(siteurl);
+			
+			var lstRequest = clientContext.get_web().get_lists().getByTitle('Expense_Detail');
+			this.itemRequest = lstRequest.getItemById(parseInt(id));
+			
+			itemRequest.set_item('Status','Reject');
+			itemRequest.update();
+			
+			clientContext.executeQueryAsync(function succeeded(sender,args){
+				alert('Request Rejected successfully.');
+				window.location.reload();
+			},
+			function error(e,error){
+				alert(error.get_message());
+				
+			});
+		});
+	}
+	
+	function getListItemsManagerView_Approve() {  
+		var siteurl = _spPageContextInfo.webAbsoluteUrl;
+		var userId = _spPageContextInfo.userId; 	
+		var s_Type_Expense;
+		var s_Department;
+		var s_Category;
+		var s_Requestor;
+		var s_Amount;
+		var s_Bill_Date;
+		$("#listManager_Approved tbody").html('')
+        $.ajax({  
+            url: siteurl + "/_api/web/lists/getbytitle('Expense_Detail')/items?$select=ID,Type_Expense,Department,Category,Author/Title,Amount,Bill_Date&$expand=Author&$filter= (Approver/Id eq "+userId+") and (Status eq 'Approve')" ,  
+            method: "GET",
+            async: false,  
+            headers: { "Accept": "application/json; odata=verbose" },  
+            success: function (data) {  
+                var items = data.d.results;  
+            	for (var i = 0; i < items.length; i++) {  
+					s_Type_Expense = items[i].Type_Expense;
+					s_Department = items[i].Department;
+					s_Category = items[i].Category;
+					s_Requestor = items[i].Author.Title;
+					s_Amount = items[i].Amount;
+					s_Bill_Date = items[i].Bill_Date;
+					
+					var year = s_Bill_Date.split('-')[0];
+					var month = s_Bill_Date.split('-')[1];
+					var date = s_Bill_Date.split('-')[2];
+					var date2 =  parseInt(date, 10);
+					month2=parseInt(month,10);
+					if (date2<30)
+					{
+					date2=date2+1;
+					}
+					else if (date2==30 && (month2==1 || month2==3 || month2==5 || month2==7 ||month2==8 || month2==10 || month2==12))
+					{
+						date2=date2+1;
+					}
+					else
+					{
+						date2=1;
+						month=month2+1;
+					}
+
+					var billdate = (date2 +'-'+month+'-' + year);
+					
+					rows = "<tr><td>" + s_Type_Expense + "</td><td>" + s_Department + "</td><td>" + s_Category + "</td><td>" + s_Requestor + "</td><td>"+s_Amount +"</td><td>" + billdate + "</td><td><button type='button' value='View' style='background-color: #4CAF50; color: white;' onclick='showViewForm("+items[i].ID+")'>View</button></td></tr>";
+
+					$(rows).appendTo("#listManager_Approved tbody");
+                }
+				$('#listManager_Approved').tablesorter({
+				   widgets: ['zebra', 'filter'],
+				   headers: { 6: { sorter: false, filter: false } },
+				   theme: 'blue'
+				}); 				
+			},  
+            error: function (error) {  
+                alert("Ooops, an error occured. Please try again");  
+            }  
+        });  
+        $.ajax({  
+            url: siteurl + "/_api/web/lists/getbytitle('Expense_Detail')/items?$select=ID,Type_Expense,Department,Category,Author/Title,Amount,Bill_Date&$expand=Author&$filter= (Approver/Id eq "+userId+") and (Status eq 'Approved-Adm')" ,  
+            method: "GET",
+            async: false,  
+            headers: { "Accept": "application/json; odata=verbose" },  
+            success: function (data) {  
+                var items = data.d.results;  
+            	for (var i = 0; i < items.length; i++) {  
+					s_Type_Expense = items[i].Type_Expense;
+					s_Department = items[i].Department;
+					s_Category = items[i].Category;
+					s_Requestor = items[i].Author.Title;
+					s_Amount = items[i].Amount;
+					s_Bill_Date = items[i].Bill_Date;
+					
+					var year = s_Bill_Date.split('-')[0];
+					var month = s_Bill_Date.split('-')[1];
+					var date = s_Bill_Date.split('-')[2];
+					var date2 =  parseInt(date, 10);
+					date2=date2+1;
+					var billdate = (date2 +'-'+month+'-' + year);
+					
+					rows = "<tr><td>" + s_Type_Expense + "</td><td>" + s_Department + "</td><td>" + s_Category + "</td><td>" + s_Requestor + "</td><td>"+s_Amount +"</td><td>" + billdate + "</td><td><button type='button' value='View' style='background-color: #4CAF50; color: white;' onclick='showViewForm("+items[i].ID+")'>View</button></td></tr>";
+
+					$(rows).appendTo("#listManager_Approved tbody");
+                }				
+			},  
+            error: function (error) {  
+                alert("Ooops, an error occured. Please try again");  
+            }  
+        }); 
+	}
+	
+	function getListItemsManagerView_Reject() {  
+		var siteurl = _spPageContextInfo.webAbsoluteUrl;
+		var userId = _spPageContextInfo.userId; 	
+		var s_Type_Expense;
+		var s_Department;
+		var s_Category;
+		var s_Requestor;
+		var s_Amount;
+		var s_Bill_Date;
+		$("#listManager_Reject tbody").html('')
+        $.ajax({  
+            url: siteurl + "/_api/web/lists/getbytitle('Expense_Detail')/items?$select=ID,Type_Expense,Department,Category,Author/Title,Amount,Bill_Date&$expand=Author&$filter= (Approver/Id eq "+userId+") and (Status eq 'Reject')" ,  
+            method: "GET",
+            async: false,  
+            headers: { "Accept": "application/json; odata=verbose" },  
+            success: function (data) {  
+                var items = data.d.results;  
+            	for (var i = 0; i < items.length; i++) {  
+					s_Type_Expense = items[i].Type_Expense;
+					s_Department = items[i].Department;
+					s_Category = items[i].Category;
+					s_Requestor = items[i].Author.Title;
+					s_Amount = items[i].Amount;
+					s_Bill_Date = items[i].Bill_Date;
+					
+					var year = s_Bill_Date.split('-')[0];
+					var month = s_Bill_Date.split('-')[1];
+					var date = s_Bill_Date.split('-')[2];
+					var date2 =  parseInt(date, 10);
+					month2=parseInt(month,10);
+					if (date2<30)
+					{
+					date2=date2+1;
+					}
+					else if (date2==30 && (month2==1 || month2==3 || month2==5 || month2==7 ||month2==8 || month2==10 || month2==12))
+					{
+						date2=date2+1;
+					}
+					else
+					{
+						date2=1;
+						month=month2+1;
+					}
+
+					var billdate = (date2 +'-'+month+'-' + year);
+					
+					rows = "<tr><td>" + s_Type_Expense + "</td><td>" + s_Department + "</td><td>" + s_Category + "</td><td>" + s_Requestor + "</td><td>"+s_Amount +"</td><td>" + billdate + "</td><td><button type='button' value='View' style='background-color: #4CAF50; color: white;' onclick='showViewForm("+items[i].ID+")'>View</button></td></tr>";
+
+					$(rows).appendTo("#listManager_Reject tbody");
+                } 
+				$('#listManager_Reject').tablesorter({
+				   widgets: ['zebra', 'filter'],
+				   headers: { 6: { sorter: false, filter: false } },
+				   theme: 'blue'
+				}); 
+			},  
+            error: function (error) {  
+                alert("Ooops, an error occured. Please try again");  
+            }  
+        });  
+        $.ajax({  
+            url: siteurl + "/_api/web/lists/getbytitle('Expense_Detail')/items?$select=ID,Type_Expense,Department,Category,Author/Title,Amount,Bill_Date&$expand=Author&$filter= (Approver/Id eq "+userId+") and (Status eq 'Reject-Adm')" ,  
+            method: "GET",
+            async: false,  
+            headers: { "Accept": "application/json; odata=verbose" },  
+            success: function (data) {  
+                var items = data.d.results;  
+            	for (var i = 0; i < items.length; i++) {  
+					s_Type_Expense = items[i].Type_Expense;
+					s_Department = items[i].Department;
+					s_Category = items[i].Category;
+					s_Requestor = items[i].Author.Title;
+					s_Amount = items[i].Amount;
+					s_Bill_Date = items[i].Bill_Date;
+					
+					var year = s_Bill_Date.split('-')[0];
+					var month = s_Bill_Date.split('-')[1];
+					var date = s_Bill_Date.split('-')[2];
+					var date2 =  parseInt(date, 10);
+					date2=date2+1;
+					var billdate = (date2 +'-'+month+'-' + year);
+					
+					rows = "<tr><td>" + s_Type_Expense + "</td><td>" + s_Department + "</td><td>" + s_Category + "</td><td>" + s_Requestor + "</td><td>"+s_Amount +"</td><td>" + billdate + "</td><td><button type='button' value='View' style='background-color: #4CAF50; color: white;' onclick='showViewForm("+items[i].ID+")'>View</button></td></tr>";
+
+					$(rows).appendTo("#listManager_Reject tbody");
+                } 
+				},  
+            error: function (error) {  
+                alert("Ooops, an error occured. Please try again");  
+            }  
+        });  
+
+	}
+	
+	function getListItemsManagerView_Reimbursed() {  
+		var siteurl = _spPageContextInfo.webAbsoluteUrl;
+		var userId = _spPageContextInfo.userId; 	
+		var s_Type_Expense;
+		var s_Department;
+		var s_Category;
+		var s_Requestor;
+		var s_Amount;
+		var s_Bill_Date;
+		$("#listManager_Reimbursed tbody").html('')
+        $.ajax({  
+            url: siteurl + "/_api/web/lists/getbytitle('Expense_Detail')/items?$select=ID,Type_Expense,Department,Category,Author/Title,Amount,Bill_Date&$expand=Author&$filter= (Approver/Id eq "+userId+") and (Status eq 'Reimbursed')" ,  
+            method: "GET",
+            async: false,  
+            headers: { "Accept": "application/json; odata=verbose" },  
+            success: function (data) {  
+                var items = data.d.results;  
+            	for (var i = 0; i < items.length; i++) {  
+					s_Type_Expense = items[i].Type_Expense;
+					s_Department = items[i].Department;
+					s_Category = items[i].Category;
+					s_Requestor = items[i].Author.Title;
+					s_Amount = items[i].Amount;
+					s_Bill_Date = items[i].Bill_Date;
+					
+					var year = s_Bill_Date.split('-')[0];
+					var month = s_Bill_Date.split('-')[1];
+					var date = s_Bill_Date.split('-')[2];
+					var date2 =  parseInt(date, 10);
+					month2=parseInt(month,10);
+					if (date2<30)
+					{
+					date2=date2+1;
+					}
+					else if (date2==30 && (month2==1 || month2==3 || month2==5 || month2==7 ||month2==8 || month2==10 || month2==12))
+					{
+						date2=date2+1;
+					}
+					else
+					{
+						date2=1;
+						month=month2+1;
+					}
+
+					var billdate = (date2 +'-'+month+'-' + year);
+					
+					rows = "<tr><td>" + s_Type_Expense + "</td><td>" + s_Department + "</td><td>" + s_Category + "</td><td>" + s_Requestor + "</td><td>"+s_Amount +"</td><td>" + billdate + "</td><td><button type='button' value='View' style='background-color: #4CAF50; color: white;' onclick='showViewForm("+items[i].ID+")'>View</button></td></tr>";
+
+					$(rows).appendTo("#listManager_Reimbursed tbody");					
+                } 
+				$('#listManager_Reimbursed').tablesorter({
+				   widgets: ['zebra', 'filter'],
+				   headers: { 6: { sorter: false, filter: false } },
+				   theme: 'blue'
+				}); 
+			},  
+            error: function (error) {  
+                alert("Ooops, an error occured. Please try again");  
+            }  
+        });  
+	}
+</script> 
+<style>
+	table {
+		border-collapse: collapse;
+		border: 1px solid gray;
+	}
+
+	 th {
+		border: 1px solid gray;
+		color:white!important;
+		background-color:#00a1de!important;
+		padding: 10px 8px 10px 8px!important;
+		
+	}
+	td
+	{
+		border: 1px solid gray;
+		color:black;
+		background-color:white;
+		line-height: 14px; !important
+		Height: 3px; !important
+	}
+	.ms-webpartPage-root { border-spacing: 10px !important; padding:10px !important;}
+	.ms-webpartzone-cell {padding:20px !important;}
+	div.hidden
+	{
+	   display: none
+	}
+	
+	input[type=button]
+	{
+		background-color: #4CAF50;
+		border: none;
+		color: white;
+		padding: 10px;
+		text-decoration: none;
+		margin: 4px 2px;
+		cursor: pointer;
+	}
+	
+	.tablesorter thead .disabled {display: none}
+</style>
+
+<div id="pageData">
+	<div id = "tab">
+	<h4>Report</h4>
+        <table id = "list" cellspacing = "0px" cellpadding = "20px" text-align = "center" class="table table-responsive">
+            <thead>
+                <tr>
+                    <th bgcolor="#72c7e7" rowspan="2">Department</th>
+                    <th bgcolor="#72c7e7" rowspan="2">Category</th>
+                    <th bgcolor="#72c7e7" colspan="3">Current Month Budget</th>
+					<th bgcolor="#72c7e7" colspan="3">Previous Month Budget</th>				
+				</tr>
+				<tr>
+						<th bgcolor="#72c7e7">Total</th>
+						<th bgcolor="#72c7e7">Used</th>
+						<th bgcolor="#72c7e7">Balanced</th>
+						<th bgcolor="#72c7e7">Total</th>
+						<th bgcolor="#72c7e7">Used</th>
+						<th bgcolor="#72c7e7">Balanced</th>
+				</tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+	</div>
+	<div id="tab"> ?<br/>
+	<h4>Request Pending</h4>
+	   <table id="listManager_Pending" cellspacing="0px" cellpadding="20px" text-align="center" class="table table-responsive"> 
+		  <thead> 
+			 <tr> 
+				<th bgcolor="#72c7e7">Type_Expense </th> 
+				<th bgcolor="#72c7e7">Department</th> 
+				<th bgcolor="#72c7e7">Category</th> 
+				<th bgcolor="#72c7e7">Requester</th>
+				<th bgcolor="#72c7e7">Amount</th>
+				<th bgcolor="#72c7e7">Bill_Date</th> 
+				<th bgcolor="#72c7e7">View</th> 
+				<th bgcolor="#72c7e7">Approve/Reject</th>
+			 </tr> 
+		  </thead> 
+		  <tbody>
+			 
+		  </tbody> 
+	   </table> 
+	</div> 
+	<div id="tab"> ?<br/>
+	<h4>Request Approved</h4>
+	   <table id="listManager_Approved" cellspacing="0px" cellpadding="20px" text-align="center" class="table table-responsive"> 
+		  <thead> 
+			 <tr> 
+				<th bgcolor="#72c7e7">Type_Expense </th> 
+				<th bgcolor="#72c7e7">Department</th> 
+				<th bgcolor="#72c7e7">Category</th> 
+				<th bgcolor="#72c7e7">Requester</th>
+				<th bgcolor="#72c7e7">Amount</th>
+				<th bgcolor="#72c7e7">Bill_Date</th> 
+				<th bgcolor="#72c7e7">View</th> 
+			 </tr> 
+		  </thead> 
+		  <tbody>
+			 
+		  </tbody> 
+	   </table> 
+	</div>
+	<div id="tab"> ?<br/>
+	<h4>Request Rejected</h4>
+	   <table id="listManager_Reject" cellspacing="0px" cellpadding="20px" text-align="center" class="table table-responsive"> 
+		  <thead> 
+			 <tr> 
+				<th bgcolor="#72c7e7">Type_Expense </th> 
+				<th bgcolor="#72c7e7">Department</th> 
+				<th bgcolor="#72c7e7">Category</th> 
+				<th bgcolor="#72c7e7">Requester</th>
+				<th bgcolor="#72c7e7">Amount</th>
+				<th bgcolor="#72c7e7">Bill_Date</th> 
+				<th bgcolor="#72c7e7">View</th> 
+			 </tr> 
+		  </thead> 
+		  <tbody>
+			 
+		  </tbody> 
+	   </table> 
+	</div>
+	<div id="tab"> ?<br/>
+	<h4>Request Reimbursed</h4>
+	   <table id="listManager_Reimbursed" cellspacing="0px" cellpadding="20px" text-align="center" class="table table-responsive"> 
+		  <thead> 
+			 <tr> 
+				<th bgcolor="#72c7e7">Type_Expense </th> 
+				<th bgcolor="#72c7e7">Department</th> 
+				<th bgcolor="#72c7e7">Category</th> 
+				<th bgcolor="#72c7e7">Requester</th>
+				<th bgcolor="#72c7e7">Amount</th>
+				<th bgcolor="#72c7e7">Bill_Date</th> 
+				<th bgcolor="#72c7e7">View</th> 
+			 </tr> 
+		  </thead> 
+		  <tbody>
+			 
+		  </tbody> 
+	   </table> 
+	</div>	
+</div>
