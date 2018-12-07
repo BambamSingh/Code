@@ -44,3 +44,147 @@ $(document).ready(function() {
  return tableContent;
  }
  });
+
+
+
+For/////////////
+ <!DOCTYPE html>
+<html>
+<head><script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>  
+   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+
+   <style>
+        .myTable th {
+            padding: 10px;
+            cursor: pointer;
+        }
+        .myTable, .myTable tr, .myTable td {
+            border: 1px solid #ccc;
+            border-collapse: collapse;
+            padding: 6px;
+        }
+        .material-icons {
+            font-size: 17px;
+        }
+   </style>
+   <script>
+        var myApp = angular.module("myApp", []);  
+        myApp.controller("myController", function($scope, $http) {
+            $scope.editablerow = '';
+
+            // Here I call the Sharepoint List
+            $http({
+                method:'GET',
+                url:_spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getByTitle('test')/items?$select=Title,FN,ID",
+                headers: { "Accept": "application/json;odata=verbose" }
+            }).success(function(data, status, headers, config) {
+                var dataResults = data.d.results;
+                $scope.contacts = dataResults;
+            }).error(function(data, status, headers, config) {
+                alert("Error! The list's data cannot be found.");
+            });
+
+            // And this is for the edit options
+            $scope.editContent = function(contact) {
+                $scope.editablerow = angular.copy(contact);
+            }
+            $scope.loadTemplate = function(contact) {
+                if(contact.ID === $scope.editablerow.ID){ return 'edit';}
+                else return 'view';
+            }
+           
+
+            // Here's the part that was missing, but still doesn't work :/
+            $scope.saveData = function(indx) {
+               
+                //  $scope.rows[indx] = angular.copy($scope.editablerow);
+                 alert(indx);
+                var data = {
+                    __metadata: { "type": "SP.Data.TestListItem" },
+             
+                    Title:$scope.editablerow.Title,
+                    FN :$scope.editablerow.FN
+                };
+                $http({
+                    method:'POST',
+                    url:_spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getByTitle('test')/getItemById("+ indx +")/items?$select=Title,FN,ID",
+                    headers: {
+                        "Accept": "application/json;odata=verbose",
+                        "X-RequestDigest":  $("#__REQUESTDIGEST").val(),
+                        "content-type": "application/json;odata=verbose",
+                        "X-HTTP-Method": "PATCH", //Not sure if maybe it is "MERGE"?
+                        "If-Match": "*"
+                    },
+                    data: JSON.stringify(data)
+                }).success(function(data, status, headers, config) {
+                    alert("Updated");
+                }).error(function(data, status, headers, config) {
+                   console.log(data); alert("Error! The data cannot be updated.");
+                });
+                $scope.reset();
+            };
+            $scope.reset = function() {
+                $scope.editablerow = [];
+            }
+        });
+    </script>
+</head>
+<body>
+    <div ng-app="myApp">
+        <div ng-controller="myController" class="myCode">
+            <table class="myTable">
+                <thead>
+                    <tr>
+                        <!--So these are the columns of my list-->
+                        <th>
+                            <i class="material-icons">attach_file</i>
+                        </th>
+                        <th>Edit</th>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>FN</th>
+                        
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Here I call the results which are in the following scripts -->
+                    <tr ng-repeat="contact in contacts" ng-include="loadTemplate(contact)">
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- This is the Script to show the results normally -->
+            <script type="text/ng-template" id="view">
+                <td>
+                    <i ng-if="contact.Attachments" class="material-icons">attach_file</i>
+                </td>
+                <td>
+                    <!-- This is the button to open the "Edition mode" -->
+                    <a ng-click="editContent(contact)" style="cursor:pointer">
+                        <i class="material-icons">mode_edit</i>
+                    </a>
+                </td>
+                <td>{{contact.ID | number}}</td>
+                <td>{{contact.Title}}</td>
+                <td>{{contact.FN}}</td>
+                
+            </script>
+
+            <!-- This is the Script to show the results in the Edit mode -->
+            <script type="text/ng-template" id="edit">
+                <td style="text-align: center;">
+                    <i ng-if="contact.Attachments" class="material-icons">attach_file</i>
+                </td>
+                <td>
+                    <button ng-click="saveData($index)">Save</button>
+                    <button ng-click="reset()">Cancel</button>
+                </td>
+                <td>{{contact.ID}}</td>
+                <td><input type="text" ng-model="editablerow.Title" /></td>
+                <td><input type="text" ng-model="editablerow.FN" /></td>
+            </script>
+        </div>
+    </div>
+</body>
+</html>
