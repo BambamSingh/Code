@@ -62,25 +62,31 @@ function getItems(url){
 }
 
 function getItemsSuccess(data){
-    var result = data.d.results; // set value of result variable 
-    $.each(result, function(key, value){
-       $('#form-control').append('<option value="' + value.Department + '">' + value.Department +'</option>');
-
-        console.log(value.Department); // access the choice field value
+   if (data.d.results.length > 0) {
+    var result =groupBy(data.d.results, 'Department'); // set value of result variable 
+    $.each(result, function(index, item){
+      // $('#form-control').append('<option value="' + value.Department + '">' + value.Department +'</option>');
+         $('#form-control').append($('<option></option>').val(item).html(item));
+        console.log(item); // access the choice field value
         
     });
-    
+   }
 }
 
 function getItemsFail(err){
     // error callback
     debugger;
 } 
-$(getItemsSuccess).each(function() {
- 
-        $(this).siblings('[value="'+ $(this).val() +'"]').remove();
-         alert("HI");
-}); 
+function groupBy(items, propertyName) {
+    var finalresult = [];
+    $.each(items, function(index, item) {
+        if ($.inArray(item[propertyName], finalresult) == -1) {
+            finalresult.push(item[propertyName]);
+        }
+    });
+    return finalresult;
+}
+
 
 </script>
 </head>
