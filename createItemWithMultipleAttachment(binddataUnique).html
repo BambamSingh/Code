@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>jQuery Add / Remove Table Rows</title>
+<style type="text/css">
+    table{
+        width: 100%;
+        margin: 20px 0;
+        border-collapse: collapse;
+    }
+    table, th, td{
+        border: 1px solid #cdcdcd;
+    }
+    table th, table td{
+        padding: 5px;
+        text-align: left;
+    }
+</style>
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+  incrementValue();
+          $(".add-row").click(function(){
+            var porjectName = $("#ProjectTitle").val();
+            var pid = $("#PID").val();
+            var department = $("#form-control").val();
+            var markup = "<tr><td><input type='checkbox' name='record'></td><td>" + porjectName + "</td><td>" + pid + "</td><td>" + department + "</td></tr>";
+            $("table tbody").append(markup);
+            
+        });
+        
+        // Find and remove selected table rows
+        $(".delete-row").click(function(){
+            $("table tbody").find('input[name="record"]').each(function(){
+                if($(this).is(":checked")){
+                    $(this).parents("tr").remove();
+                }
+            });
+        });
+       
+    });
+function incrementValue()
+{
+    var value = parseInt(document.getElementById('PID').value, 10);
+    value = isNaN(value) ? 0 : value;
+    value++;
+    document.getElementById('PID').value = value;
+}
+var url = "/_api/web/lists/getbytitle('Expense_Category')/items?$select=Department";
+
+getItems(url).then(getItemsSuccess, getItemsFail);
+
+function getItems(url){
+    return $.ajax({
+        url: _spPageContextInfo.webAbsoluteUrl + url,
+        type: "GET",
+        headers: {
+            "accept": "application/json;odata=verbose",
+        }
+    });
+}
+
+function getItemsSuccess(data){
+   if (data.d.results.length > 0) {
+    var result =groupBy(data.d.results, 'Department'); // set value of result variable 
+    $.each(result, function(index, item){
+      // $('#form-control').append('<option value="' + value.Department + '">' + value.Department +'</option>');
+         $('#form-control').append($('<option></option>').val(item).html(item));
+        
+        
+    });
+   }
+}
+
+function getItemsFail(err){
+    // error callback
+    debugger;
+} 
+function groupBy(items, propertyName) {
+    var finalresult = [];
+    $.each(items, function(index, item) {
+        if ($.inArray(item[propertyName], finalresult) == -1) {
+            finalresult.push(item[propertyName]);
+        }
+    });
+    return finalresult;
+}
+function addItem(){
+    var listname = $('select#form-control option:selected').val();
+    var porjectName = $("#ProjectTitle").val();
+    var pid = $("#PID").val();
+    var department = $("#form-control").val();
+try{
+
+    var data = {
+        __metadata: { 'type': "SP.Data."+listname+"ListItem" },
+            Title: porjectName, 
+            PID: pid ,
+            Department:department       
+    };
+
+   addListItem(listname,$("#__REQUESTDIGEST").val(),data).then(function(data){
+
+         if (document.getElementById("inputFile").files.length === 0) {                     
+                    alert("Your item has been submitted successfully!");                        
+           }       
+           else
+           {
+               //File Upload
+                var itemId =  data.d.ID;   
+                var fileInput = $('#inputFile');
+                var fileCount = fileInput[0].files.length;  
+                var fileArray = [];
+
+                for(var i=0;i<fileCount;i++)
+                {
+                    fileArray.push(fileInput[0].files[i]);
+                }                               
+                uploadFileSP(listname , itemId, fileArray, fileCount);
+           }
+   },function(err){
+       alert("Your item has not been submitted successfully!");
+   });  
+}
+catch(error)
+{
+    alert("Your item has not been submitted successfully!");
+}                               
+}
+
+
+function addListItem(listName,  requestDigestValue, data) {  
+
+return $.ajax({
+    url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getByTitle('" + listName + "')/items",
+    type: "POST",
+    headers: {
+        "accept": "application/json;odata=verbose",
+        "X-RequestDigest": requestDigestValue,
+        "content-Type": "application/json;odata=verbose"
+    },
+    data: JSON.stringify(data)
+});
+}
+
+function getFileBuffer(file) {
+var deferred = $.Deferred();
+var reader = new FileReader();
+reader.onload = function (e) {
+    deferred.resolve(e.target.result);
+}
+reader.onerror = function (e) {
+    deferred.reject(e.target.error);
+}
+reader.readAsArrayBuffer(file);
+return deferred.promise();
+}
+
+function uploadFileSP(listName, id, fileArray, fileCount) {
+var FilesCount = 0;
+var deferred = $.Deferred();
+var uploadStatus = "";
+var file = fileArray[0];
+var getFile = getFileBuffer(file);
+
+getFile.done(function (buffer, status, xhr) {
+    var bytes = new Uint8Array(buffer);
+    var content = new SP.Base64EncodedByteArray();
+    var queryUrl = _spPageContextInfo.webAbsoluteUrl + "/_api/lists/GetByTitle('" + listName + "')/items(" + id + ")/AttachmentFiles/add(FileName='" + file.name + "')";
+    var uploadCount = 0;
+    $.ajax({
+        url: queryUrl,
+        type: "POST",
+        processData: false,
+        contentType: "application/json;odata=verbose",
+        data: buffer,
+        headers: {
+            "accept": "application/json;odata=verbose",
+            "X-RequestDigest": $("#__REQUESTDIGEST").val(),
+            "content-length": buffer.byteLength
+        },
+        success: function (data) {
+            FilesCount++;
+            uploadStatus = FilesCount;
+            fileArray.shift();
+            if (fileArray.length > 0) {
+                uploadFileSP(listName, id, fileArray, fileArray.length);
+            }
+            else {
+              alert ("Your item has been submitted successfully!");                    
+            }
+        },
+        error: function (err) {                
+            alert("Idea has been submitted but some files failed to upload.");                
+        }
+    });
+    deferred.resolve(uploadStatus);
+});
+
+getFile.fail(function (err) {
+    deferred.reject(err);
+});
+return deferred.promise();
+}
+// function AddListItem() 
+//  { 
+// var listname = $('select#form-control option:selected').val();
+//  var porjectName = $("#ProjectTitle").val();
+//             var pid = $("#PID").val();
+//             var department = $("#form-control").val();
+//      $.ajax 
+//          ({ 
+//          url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/GetByTitle('" + listname +"')/items", 
+//          type: "POST", 
+//          data: JSON.stringify 
+//          ({ 
+//              __metadata: 
+//              { 
+//                 type: "SP.Data."+listname+"ListItem" 
+//              }, 
+//              Title: porjectName, 
+//              PID: pid ,
+//              Department:department
+//          }), 
+//          headers: 
+//          { 
+//              "Accept": "application/json;odata=verbose", 
+//              "Content-Type": "application/json;odata=verbose", 
+//              "X-RequestDigest": $("#__REQUESTDIGEST").val(), 
+//              "X-HTTP-Method": "POST" 
+//          }, 
+//          success: function(data, status, xhr) 
+//          { 
+//            //  retriveListItem(); 
+//            alert("HI");
+//          }, 
+//          error: function(xhr, status, error) 
+//          { 
+//             // $("#ResultDiv").empty().text(data.responseJSON.error); 
+//          } 
+//      });
+// }
+</script>
+</head>
+<body>
+    <div id="MainForm">
+      <tr>
+      <td>Project Title</td>
+      <td><input type="text" id="ProjectTitle" placeholder="Project Title"></td>
+       <td>Project ID</td>
+      <td><input type="text" id="PID" placeholder="PID"></td>
+      <td>Select Department</td>
+        <td><select id="form-control" style="width: 200px;">
+          <option>Select Department</option>
+          
+      </select>
+    </td>
+    <td> Select files: <input type="file" id="inputFile" name="files" multiple> </td>
+  <!-- <td><input type="submit" onclick="uploadFileSP()" ></td> -->
+    <td><input type="button" class="add-row" onclick="addItem()" value="Add Row"></td>
+    </tr>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Select</th>
+                <th>Project Title</th>
+                <th>Project ID</th>
+                <th>Department</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- <tr>
+                <td><input type="checkbox" name="record"></td>
+                
+            </tr> -->
+        </tbody>
+    </table>
+    <button type="button" class="delete-row">Delete Row</button>
+</body> 
+</html>
