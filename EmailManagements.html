@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+
+        <title>Hello, world!</title>
+    </head>
+    <body>
+        <div class="table-responsive">
+            <table id="tblEmailManagement" class="table table-bordered">
+                <thead>
+                    <tr class="bg-primary">
+                        <th>Email Subject</th>
+                        <th>Email Body</th>
+                        <th>Email Attachments</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalCenterTitle">Share Documents in Groups</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group row">
+                        <label for="txtSubject" class="col-sm-2 col-form-label">Subject</label>
+                        <div class="col-sm-10">
+                            <input type="text" readonly class="form-control-plaintext" id="txtSubject" value="">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="txtBody" class="col-sm-2 col-form-label">Message</label>
+                        <div class="col-sm-10">
+                            <textarea id="txtBody" readonly class="form-control-plaintext"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="txtSubject" class="col-sm-2 col-form-label">Attachments</label>
+                        <div class="col-sm-10">
+                            <span class="glyphicon glyphicon-paperclip" aria-hidden="true">
+                            </span>
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+        <script type="text/javascript">
+            $(document).ready(function(){
+                GetEmailListItems();
+            });
+            $(document).on("click", 'button[name="Edit"]', function(){
+                var emailId = $(this).parent().parent().attr('Id');
+                GetEmailListItem(emailId);
+            });
+            
+            function GetEmailListItem(emailId){
+                $.ajax({
+                    url: _spPageContextInfo.siteAbsoluteUrl + "/_api/lists/getbytitle('Email Management')/items(" + parseInt(emailId) + ")?$expand=AttachmentFiles",
+                    method: "GET",
+                    headers: { "Accept": "application/json;odata=verbose" },
+                    success: function(data){
+                        var value = data.d;
+                        console.log(value);
+                        $('#txtSubject').val(value.Title.trim());
+                        $('#txtBody').val(value.Email_x0020_Body.trim());
+                    },
+                    error: function(data){
+                        alert('Something happened. ' + data.message);
+                    }
+                })
+            }
+
+            function GetEmailListItems()
+            {
+                $.ajax({
+                    url: _spPageContextInfo.siteAbsoluteUrl + "/_api/lists/getbytitle('Email Management')/items?$expand=AttachmentFiles",
+                    method: "GET",
+                    headers: { "Accept": "application/json;odata=verbose" },
+                    success: function(data){
+                        var result = data.d.results;
+                        if(result.length > 0){
+                            var tr = "";
+                            $.each(result, function(index, value){
+                                tr += '<tr id="'+ value.ID +'"><td>' + value.Title + '</td><td>' + value.Email_x0020_Body.trim() + '</td>';
+                                if(value.Attachments){
+                                    var attach = "";
+                                    $.each(value.AttachmentFiles.results, function(index, valueAttachment){
+                                        if(index > 0){
+                                            attach += "<br>";
+                                        }
+                                        attach += '<a href="' + valueAttachment.ServerRelativeUrl + '" target="_blank">' + valueAttachment.FileName + "</a>";
+                                    });
+                                    tr += "<td>" + attach + '</td><td><button name="Edit" type="button" class="btn btn-success"  data-toggle="modal" data-target="#exampleModalCenter" attr-value="' + value.ID + '">Edit</button></td></tr>';
+                                }
+                                else{
+                                    tr += "<td>There is no attachments</td></tr>"
+                                }
+                            });
+                            $('#tblEmailManagement tbody').append(tr);
+                        }
+                    },
+                    error: function(data){
+                        alert("Something happened. " + data.message);
+                    }
+                })
+            }
+        </script>
+    </body>
+</html>
