@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="txtName">Student's Name</label>
+                            <input type="text" class="form-control" id="txtName" placeholder="Student's Name">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="fdDocuments">Documents</label>
+                            <input type="file" class="form-control" id="attachmentfile" multiple>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <button type="button" class="btn btn-success" id="btnSubmit">Submit</button>
+                        </div>
+                        <div class="form-group col-md-6">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
+        <script type="text/javascript">
+            var siteUrl = _spPageContextInfo.webAbsoluteUrl;
+            var listName = "Students";
+            var xRequestDigest = $("#__REQUESTDIGEST").val();
+            $(document).ready(function(){
+                $('#btnSubmit').click(function(){
+                    AddStudents();
+                });
+            });
+            
+            function AddStudents(){
+                debugger;
+                var title = JSON.stringify  ({  
+                    __metadata:  
+                    {  
+                        type: "SP.Data.StudentsListItem"  
+                    },  
+                    Title: $('#txtName').val()  
+                });
+                $.ajax({
+                    url: siteUrl + "/_api/lists/getbytitle('" + listName + "')/items",
+                    method: "POST",
+                    data: title,
+                    async: false,
+                    headers: {
+                        "Accept": "application/json;odata=verbose",
+                        "Content-Type": "application/json;odata=verbose",
+                        "X-RequestDigest": xRequestDigest
+                    },
+                    success: function(data){
+                        uploadattachment(data.d.ID);
+                        alert('Student record created successfully.');
+                        $('#txtName').val('');
+                        $('#attachmentfile').val('');
+                    },
+                    error: function(data){
+                        alert(data.responseText);
+                    }
+                });
+            }
+
+            var getFileBuffer = function (file) {
+                var deferred = $.Deferred();
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    deferred.resolve(e.target.result);
+                }
+                reader.onerror = function (e) {
+                    deferred.reject(e.target.error);
+                }
+                reader.readAsArrayBuffer(file);
+                return deferred.promise();
+            };
+
+            function uploadattachment(id) {
+                debugger;
+                var files = $("#attachmentfile")[0].files;
+                if (files.length > 0) {
+                    $.each(files, function(index, value){
+                        getFileBuffer(value).then(function (buffer) {
+                            $.ajax({
+                                url: siteUrl + "/_api/web/lists/getbytitle('" + listName + "')/items(" + id + ")/AttachmentFiles/add(FileName='" + value.name + "')",
+                                method: 'POST',
+                                data: buffer,
+                                async: false,
+                                processData: false,
+                                headers: {
+                                    "Accept": "application/json;odata=verbose",
+                                    "content-type": "application/json;odata=verbose",
+                                    "X-RequestDigest": xRequestDigest
+                                },
+                                success: function (data) {
+                                },
+                                error: function (data) {
+                                    console.log(data.responseText.error);
+                                    alert(data.responseText);
+                                }
+                            });
+                        });
+                    });
+                }
+            }
+        </script>
+    </body>
+</html>
