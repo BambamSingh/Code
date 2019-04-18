@@ -1,0 +1,493 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+     <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+<script src="https://code.jquery.com/jquery-3.3.1.js"></script>  
+    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>  
+    <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap.min.js"></script>  
+     
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.12/css/dataTables.bootstrap.min.css" />  
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" />  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js" type="text/javascript"></script>  
+    <script src="https://cdn.jsdelivr.net/script.js/0.1/script.js"></script>  
+   <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css"/> --> 
+     <script type="text/javascript" src="/Jquery/jquery.SPServices-0.6.2.min.js"></script>
+    <script type="text/javascript" src="https://sagaciousresearch.sharepoint.com/sites/dev/_layouts/15/sp.core.js"></script>  
+    <script type="text/javascript" src="https://sagaciousresearch.sharepoint.com/sites/dev/_layouts/15/clienttemplates.js"></script>  
+    <script type="text/javascript" src="https://sagaciousresearch.sharepoint.com/sites/dev/_layouts/15/clientforms.js"></script>  
+    <script type="text/javascript" src="https://sagaciousresearch.sharepoint.com/sites/dev/_layouts/15/clientpeoplepicker.js"></script>  
+    <script type="text/javascript" src="https://sagaciousresearch.sharepoint.com/sites/dev/_layouts/15/autofill.js"></script>  
+    <script type="text/javascript" src="https://sagaciousresearch.sharepoint.com/sites/dev/_layouts/15/1033/sts_strings.js"></script> 
+    <script type="text/javascript" src="https://sagaciousresearch.sharepoint.com/sites/dev/SiteAssets/ONBoardOffBoardApprove/BS%20Model%20Form/js/UserOnboard.js"></script> 
+    
+  <title>Material Design Bootstrap</title>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css">
+  <!-- Bootstrap core CSS -->
+  
+ <!-- <link href="https://sagaciousresearch.sharepoint.com/sites/dev/SiteAssets/ONBoardOffBoardApprove/BS%20Model%20Form/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Material Design Bootstrap -->
+  <!-- <link href="https://sagaciousresearch.sharepoint.com/sites/dev/SiteAssets/ONBoardOffBoardApprove/BS%20Model%20Form/css/mdb.min.css" rel="stylesheet">
+  <!-- Your custom styles (optional) -->
+ <!-- <link href="https://sagaciousresearch.sharepoint.com/sites/dev/SiteAssets/ONBoardOffBoardApprove/BS%20Model%20Form/css/style.css" rel="stylesheet">  -->
+ <style>
+.js-webpart-titleCell{
+    display: none;
+}
+.ms-rtestate-field p, p.ms-rteElement-P {
+    display: none;
+}
+.row {
+    /* margin-right: 17px; */
+    margin-left: -109px !important;
+}
+table {
+    background-color: lightblue !important;
+}
+</style>
+  </head>
+  <body>
+    <!-- <div class="form-group">  
+    <label id="Name">Employee Name<span class="error-msg">*</span>  
+    </label>  
+    <div id="txtName"></div>  
+  </div>   -->
+  <!-- Start your project here-->
+  <div class="modal fade" id="modalRegisterForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">OnBoarding</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <i class="fas fa-user prefix grey-text"></i>
+          <input type="text" id="orangeForm-name" class="form-control validate">
+          <label data-error="wrong" data-success="right" for="orangeForm-name">Name</label>
+        </div>
+         <div class="md-form mb-4">
+          <i class="fas fa-id-card prefix grey-text"></i>
+          <input type="text" id="orangeForm-employeeId" class="form-control validate">
+          <label data-error="wrong" data-success="right" for="orangeForm-employeeId">Employee ID</label>
+        </div>
+      
+        <!-- <div class="md-form mb-5">
+          <i class="fas fa-users prefix grey-text"></i>
+          <input type="text" id="orangeForm-teamname" class="form-control validate">
+          <label data-error="wrong" data-success="right" for="orangeForm-teamname">Team Name</label>
+        </div> -->
+        <div class="md-form mb-5">
+          <i class="fas fa-users prefix grey-text"></i>
+          <input type="text" id="orangeForm-designation" class="form-control validate">
+          <label data-error="wrong" data-success="right" for="orangeForm-designation">Designation</label>
+        </div>
+        
+        <!-- <div class="md-form mb-5">
+          <i class="fas fa-users prefix grey-text"></i>
+          <input type="text" id="orangeForm-manager" class="form-control validate">
+          <label data-error="wrong" data-success="right" for="orangeForm-manager">Manager</label>
+        </div> -->
+        <div class="md-form mb-5">
+           <!-- <i class="fas fa-users"></i>  -->
+           <!-- <label data-error="wrong" data-success="right" for="orangeForm-department">Department</label> -->
+          <select class="form-control validate" id="orangeForm-department">
+               <option>Select department</option>
+              
+          </select>
+          
+          
+        </div>
+
+        <div class="md-form mb-4">
+          <i class="fas fa-calendar prefix grey-text"></i>
+          <input type="date" id="orangeForm-calender" class="form-control validate">
+          <label data-error="wrong" data-success="right" for="orangeForm-calender">Start Date</label>
+        </div>
+        <div class="md-form mb-4">
+          <i class="fas fa-calendar prefix grey-text"></i>
+          <input type="date" id="orangeForm-Duedate" class="form-control validate">
+          <label data-error="wrong" data-success="right" for="orangeForm-calender">Due Date</label>
+        </div>
+        <div class="md-form mb-4">
+          <i class="fas fa-map-marker-alt prefix grey-text"></i>
+          <input type="text" id="orangeForm-location" class="form-control validate">
+          <label data-error="wrong" data-success="right" for="orangeForm-location">Location</label>
+        </div>
+        <div class="md-form mb-5">  
+          <div id="txtName"></div>  
+             <label data-error="wrong" data-success="right" for="orangeForm-location" class="bmd-label-placeholder">Manager</label>  
+             
+        </div> 
+       
+
+      </div>
+      <div class="modal-footer d-flex justify-content-center">
+        <input type="button" class="btn btn-deep-orange" onclick="additems();" value="submit">
+      </div>
+    </div>
+  </div>
+</div>
+<div class="text-center">
+  <a href="" class="btn btn-default btn-rounded mb-4" id="create" data-toggle="modal" data-target="#modalRegisterForm">Create User for ONBoarding</a>
+</div>
+
+  <div class="container">
+    
+        <div id="row4" class="row nopadding ">  
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 form-horizontal padLeftRight">  
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 pleft0 pright0">  
+                    <div class="announcment paddingwebpart " style="background:white;">  
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 pleft0 pright0">  
+                            <h5 id="BtnAlign"> <a class="addbtn" target="_blank" style="color:white; text-decoration:none" data-target="#ModalForNewProject" data-toggle="modal">New Employee</a> </h5> <br> </div>  
+                        <table id="subsiteList" class="table table-striped table-bordered" bgcolor ="#ADD8E6" >  
+                            <thead>  
+                                <tr>  
+                                    <th>Employee Id</th>  
+                                    <th>Name</th> 
+                                    <th>Designation</th> 
+                                    <th>Team Name</th>  
+                                    <th>Start Date</th>
+                                     <th>Due Date</th>  
+                                     <th>Location</th> 
+                                    <th>Manager</th>
+                                    <th>Seat Number</th> 
+                                    <th>Mail Id</th> 
+                                    <th>Laptop/Computer Ready</th> 
+                                    <th>SelfPortal</th> 
+                                    <th>Accessories For Employee</th> 
+                                    <th>Time Sheet Assign</th> 
+                                    <th>Permission Given</th>
+                                    <th>Edit</th>  
+                                    
+                                </tr>  
+                            </thead>  
+                            <tbody></tbody>  
+                        </table>  
+                    </div>  
+                </div>  
+            </div>  
+        </div>  
+
+
+    <div class="modal fade" id="ModalForUpdateEmployee" role="dialog" title="Update New Employee">  
+        <div class="modal-dialog">  
+            <fieldset>  
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 cls-contriute">  
+                    <h5 class="contributtitle">Update Employee Information</h5>  
+                </div>  
+            </fieldset>  
+            <div id="ModelBody">  
+                <div class="form-horizontal well bs-component cls-divthoug" id="ModalValidation">  
+                    <fieldset id="bodymodal"> 
+                         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 form-group"> <label class="col-lg-4 col-md-4 col-sm-4 col-xs-4 cls-thought">Name  
+<span class="red">*</span>  
+</label>  
+                            <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8"> <input class="form-control" type="text" id="txtempnames" readonly /> 
+                             
+                               </div>  
+                        </div>
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 form-group"> <label class="col-lg-4 col-md-4 col-sm-4 col-xs-4 cls-thought">Employee Id  
+<span class="red">*</span>  
+</label>  
+                            <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8"> <input class="form-control" type="text" id="txtID" readonly />
+                             
+                               </div>  
+                        </div>   
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 form-group"> <label class="col-lg-4 col-md-4 col-sm-4 col-xs-4 cls-thought">Seat Number  
+<span class="red">*</span>  
+</label>  
+                            <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8"><input class="form-control" type="text" id="Seatallocate"/>
+                              <!-- <input class="form-control" type="text" id="txtempnames" /> <span class="ErMsg" id="ProNmMsg">Please fill out this field!</span> -->
+                               </div>  
+                        </div>  
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 form-group"> <label class="col-lg-4 col-md-4 col-sm-4 col-xs-4 cls-thought">Mail ID
+<span class="red">*</span>  
+</label>  
+                            <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8"><input id="outlook" class="form-control"/></div>  
+                        </div>  
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 form-group"> <label class="col-lg-4 col-md-4 col-sm-4 col-xs-4 cls-thought">System ready  
+<span class="red">*</span>  
+</label>  
+                            <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8"> <select id="systemready" class="form-control">
+                                                                                <option value="Yes">Laptop</option>
+                                                                                <option value="No">Desktop</option>
+                                                                                <option value="Yes">Yes</option>
+                                                                                <option value="No">No</option>
+                                                                              </select></div>  
+                        </div>  
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 form-group"> <label class="col-lg-4 col-md-4 col-sm-4 col-xs-4 cls-thought">Self Portal Login 
+<span class="red">*</span>  
+</label>  
+                            <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8"><select id="portallogin" class="form-control">
+                                                                                <option value="Yes">yes</option>
+                                                                                <option value="No">No</option>
+                                                                              </select> </div>  
+                        </div>  
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 form-group"> <label class="col-lg-4 col-md-4 col-sm-4 col-xs-4 cls-thought">AccessoriesForEmployee  
+<span class="red">*</span>  
+</label>  
+                            <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8"><textarea  id="AccessoriesForEmployee" class="form-control" rows="4" cols="50"></textarea> </div>  
+                        </div>  
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 form-group"> <label class="col-lg-4 col-md-4 col-sm-4 col-xs-4 cls-thought">Zoho TimeSheet
+<span class="red">*</span>  
+</label>  
+                            <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8"><select id="ZohoTimeSheet" class="form-control">
+                                                                                <option value="Yes">yes</option>
+                                                                                <option value="No">No</option>
+                                                                              </select></div>  
+                        </div>  
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 form-group"> <label class="col-lg-4 col-md-4 col-sm-4 col-xs-4 cls-thought">PermissionOnSSPortal  
+<span class="red">*</span>  
+</label>  
+                            <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8"><select id="Permissiononportal" class="form-control">
+                                                                                <option value="Yes">yes</option>
+                                                                                <option value="No">No</option>
+                                                                              </select></div>  
+                        </div>  
+                      
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 form-group">  
+                            <div class="col-lg-offset-7 col-lg-2 cls-divbtn "> <input class="cls-savecancel" id="btnsave" type="button" onclick="update(uId);" value="Submit" /> </div>  
+                            <div class="col-lg-2 col-lg-offset-1"> <input class="cls-savecancel" type="reset" value="Cancel" id="btnCancel" data-dismiss="modal" /> </div>  
+                        </div>  
+                    </fieldset>  
+                </div>  
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 form-group cls-sucees" style="background-color:#edeff2">  
+                    <div id="successMessage"></div>  
+                </div>  
+            </div>  
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 form-group LoadingDiv" id="loader" style="display:none;padding: 66px;background-color: #0a2f7d!important;">  
+                <div class="loader">Loading...</div>  
+                <div class="loader1">  
+                    <p class="ones"></p>  
+                </div>  
+            </div>  
+        </div>  
+    </div> 
+     
+    </div>         
+  <!-- /Start your project here-->
+
+  <!-- SCRIPTS -->
+  <!-- JQuery -->
+  <!-- <script type="text/javascript" src="https://sagaciousresearch.sharepoint.com/sites/dev/SiteAssets/ONBoardOffBoardApprove/BS%20Model%20Form/js/jquery-3.3.1.min.js"></script>
+  <!-- Bootstrap tooltips -->
+  <script type="text/javascript" src="https://sagaciousresearch.sharepoint.com/sites/dev/SiteAssets/ONBoardOffBoardApprove/BS%20Model%20Form/js/popper.min.js"></script>
+  <!-- Bootstrap core JavaScript -->
+  <!--<script type="text/javascript" src="https://sagaciousresearch.sharepoint.com/sites/dev/SiteAssets/ONBoardOffBoardApprove/BS%20Model%20Form/js/bootstrap.min.js"></script> -->
+  <!-- MDB core JavaScript -->
+  <script type="text/javascript" src="https://sagaciousresearch.sharepoint.com/sites/dev/SiteAssets/ONBoardOffBoardApprove/BS%20Model%20Form/js/mdb.js"></script>
+
+<script type="text/javascript">  
+    
+    $(document).ready(function() { 
+
+    initializePeoplePicker("txtName");  
+}); 
+
+function initializePeoplePicker(peoplePickerElementId) {  
+    var schema = {};  
+    schema['PrincipalAccountType'] = 'User,DL,SecGroup,SPGroup';  
+    schema['SearchPrincipalSource'] = 15;  
+    schema['ResolvePrincipalSource'] = 15;  
+    schema['AllowMultipleValues'] = true;  
+    schema['MaximumEntitySuggestions'] = 50;  
+    schema['Width'] = '280px';  
+    this.SPClientPeoplePicker_InitStandaloneControlWrapper(peoplePickerElementId, null, schema);  
+}
+
+var UserId = "";
+function ensureUser() {      
+    debugger;
+var peoplePickerTopDivId = $('#txtName').children().children().attr('id');  
+var peoplePicker = this.SPClientPeoplePicker.SPClientPeoplePickerDict[peoplePickerTopDivId];  
+var users = peoplePicker.GetAllUserInfo();  
+var arryuser = users[0];  
+if(arryuser) {  
+    var payload = { 'logonName': arryuser.Key};   
+    $.ajax({  
+        url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/ensureuser",  
+        type: "POST",  
+        async:false,  
+        contentType: "application/json;odata=verbose",  
+        data: JSON.stringify(payload),  
+        headers: {  
+            "X-RequestDigest": $("#__REQUESTDIGEST").val(),  
+            "accept": "application/json;odata=verbose"  
+        },  
+        success: function(data, status, xhr) {        
+           UserId = data.d.Id;            
+        },  
+        error: function(xhr, status, error) {      
+        }  
+    });   
+    }     
+    else {  
+        UserId = 0;  
+    }  
+}  
+    $(document).ready(function() {  
+  
+    getItemsFromList();  
+  
+});  
+function getItemsFromList() {  
+  
+    $.ajax({  
+  
+        async: true,  
+        url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/GetByTitle('test')/items?$select=*,manager/Title&$expand=manager&$orderby=ID desc",
+        method: "GET",  
+  
+        headers: {  
+            "accept": "application/json;odata=verbose",  
+            "content-type": "application/json;odata=verbose"  
+  
+        },  
+        success: function(data) {  
+            data = data.d.results;  
+           // console.log(data);  
+            $.each(data, function(index, value) { // new Date(value.H_Date).toDateString()
+  
+                var html = "<tr><td>" + value.Title + "</td><td>" +value.FN + "</td><td>" + value.designation + "</td><td>" + value.teamName + "</td><td>" + new Date(value.StartDate).toDateString() + "</td><td>" + new Date(value.DueDate).toDateString() + "</td><td>" + value.Location + "</td><td>" + value.manager.Title + "</td><td>" + value.SeatAllocate + "</td><td>" + value.OutlookConfigured + "</td><td>" + value.SystemReady + "</td><td>" + value.SelfPoral + "</td><td>" + value.AccessoriesForEmployee + "</td><td>" + value.TimeSheet + "</td><td>" + value.PermissionOnSSPortal + "</td><td><a href='#' data-target='#ModalForUpdateEmployee' data-toggle='modal' onclick='edit(" + value.ID + ")'><img src='https://sagaciousresearch.sharepoint.com/sites/dev/PublishingImages/EditIcon.png'></a></td></tr>";//<td><a href='#' onclick='delete(" + value.ID + ")'><img src='https://sagaciousresearch.sharepoint.com/sites/dev/PublishingImages/delete.png'></a></td>  
+                $('.table tbody').append(html);  
+  
+            });  
+  
+            table = $('#subsiteList').DataTable();  
+        },  
+        error: function(error) {  
+            console.log(JSON.stringify(error));  
+  
+        }  
+  
+    })  
+}  
+function edit(value) { 
+   // isCurrentUserInGroups(); 
+    debugger;
+    $.ajax({  
+  
+        async: true,  
+        url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/GetByTitle('test')/items(" + value + ")",  
+        method: "GET",  
+  
+        headers: {  
+            "accept": "application/json;odata=verbose",  
+            "content-type": "application/json;odata=verbose"  
+  
+        },  
+        success: function(data) { 
+            debugger; 
+            console.log(data.d.Title);  
+            empId = $('#txtID').val(data.d.Title);  
+            name = $('#txtempnames').val(data.d.FN);  
+            teamName = $('#txtteamname').val(data.d.Team_x0020_Name);  
+             SbuHead = $('#txtsbuhead').val(data.d.SBU_x0020_Head_x0020_Name);  
+             Doj = $('#txtdoj').val(data.d.DOJ);  
+             DueDate =$("#orangeForm-Duedate").val(data.d.DueDate);
+             designations = $('#txtdesignation').val(data.d.Designation);  
+             manager = $('#txtmanager').val(data.d.Manger);
+            // reportsto = $('#txtreportsto').val(data.d.Reportstoemail.Title);
+            seat =  $('#Seatallocate').val(data.d.SeatAllocate);
+            outlok =  $('#outlook').val(data.d.OutlookConfigured);
+            SystemRdy=  $('#systemready').val(data.d.SystemReady);
+           portallogin = $('#portallogin').val(data.d.SelfPoral);
+            AccessoriesforEmployee = $('#AccessoriesForEmployee').val(data.d.AccessoriesForEmployee); 
+            zohoTimeSheet = $('#ZohoTimeSheet').val(data.d.TimeSheet);   
+           permissiononHRMS = $('#Permissiononportal').val(data.d.PermissionOnSSPortal);  
+  
+        },  
+        error: function(error) {  
+            console.log(JSON.stringify(error));  
+  
+        }  
+  
+  
+    })  
+  
+    uId = value;  
+}  
+function update(uId) {  
+    var seatallocate = $('#Seatallocate').val();  
+    var outlook = $('#outlook').val();  
+    var teamName = $('#txtteamname').val();  
+    var SystemReady = $('#systemready').val();  
+     var portallogin = $('#portallogin').val();  
+     var AccessoriesforEmployee = $('#AccessoriesForEmployee').val();  
+     var zohoTimeSheet = $('#ZohoTimeSheet').val();  
+    var permissiononHRMS = $('#Permissiononportal').val();  
+  
+    $.ajax({  
+  
+  
+        url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/GetByTitle('test')/items(" + uId + ")",  
+        method: "POST",  
+        data: JSON.stringify({  
+            '__metadata': {  
+                'type': 'SP.Data.TestListItem'  
+            },  
+            'SeatAllocate': seatallocate,  
+            'OutlookConfigured': outlook,  
+            'Team_x0020_Name': teamName,  
+            'SystemReady': SystemReady,  
+            'SelfPoral': portallogin,
+           'AccessoriesForEmployee': AccessoriesforEmployee,  
+           'TimeSheet': zohoTimeSheet,
+           'PermissionOnSSPortal': permissiononHRMS
+        }),  
+        headers: {  
+            "accept": "application/json;odata=verbose",  
+            "content-type": "application/json;odata=verbose",  
+            "X-RequestDigest": $("#__REQUESTDIGEST").val(),  
+            "IF-MATCH": "*",  
+            "X-HTTP-Method": "MERGE"  
+        },  
+        success: function(data) {  
+            swal("Item Updated successfully", "success");  
+  
+            if ($.fn.DataTable.isDataTable('#subsiteList')) {  
+                $('#subsiteList').DataTable().destroy();  
+            }  
+            $('#subsiteList tbody').empty();  
+  
+  
+            getItems();  
+        },  
+        error: function(error) {  
+            console.log(JSON.stringify(error));  
+  
+        }  
+  
+    })  
+}
+
+/*function delete(value)(){
+                $.ajax({
+                    url:  _spPageContextInfo.webAbsoluteUrl  + "/_api/web/lists/GetByTitle('test')/items(" + value + ")",
+                    type: "POST",
+                    contentType: "application/json;odata=verbose",
+                    headers: {
+                        "Accept": "application/json;odata=verbose",
+                        "X-RequestDigest": $("#__REQUESTDIGEST").val(),
+                        "IF-MATCH": "*",
+                        "X-HTTP-Method":"DELETE",
+                    },
+                    success: function (data) {
+                        alert("success");
+                    },
+                    error: function (data) {
+                        alert("failed");
+                    }
+                }); 
+            }*/
+            
+              
+      </script>
+  </body>
+</html>
