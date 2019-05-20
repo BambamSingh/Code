@@ -1,0 +1,349 @@
+<!--/*
+ * SPFullCalendar - Create a calendar view using FullCalendar.io and SharePoint Online Task list
+ * Version 1.0 
+ * @requires jQuery v1.11 or greater 
+ * @requires jQuery, FullCalendar.io, Moment.js 
+ *
+ * Copyright (c) 2017 Mark Rackley / PAIT Group
+ * Licensed under the MIT license:
+ * http://www.opensource.org/licenses/mit-license.php
+ */
+/**
+ * @description Create a calendar view using FullCalendar.io and SharePoint Online Task list
+ * @type jQuery
+ * @name SPFullCalendar
+ * @category Plugins/SPFullCalendar
+ * @author Mark Rackley / http://www.paitgroup.com / mrackley@paitgroup.com
+ */
+-->
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.SPServices/2014.02/jquery.SPServices-2014.02.min.js"></script>
+<script language="javascript" type="text/javascript" src="/sites/dev/_layouts/15/clientpeoplepicker.js"></script>
+<script language="javascript" type="text/javascript" src="/sites/dev/_layouts/15/autofill.js"></script>
+
+
+<script language="javascript" type="text/javascript">
+$(document).ready(function() {
+    $( function() {
+    $( "#datepicker_fromdate" ).datepicker();
+    $( "#datepicker_todate" ).datepicker();
+  } );
+  getHolidays();
+getheaders();
+
+});
+const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun","Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+var startDATE_global;
+var stopDate_global;
+function getheaders()
+{
+
+var today = new Date();
+var dd = today.getDate()-1;
+var month=today.getMonth();
+var year = today.getFullYear();
+var daycount;
+daycount=30;
+if(month==0||month==2||month==4||month==6||month==7||month==9||month==11)
+{
+	daycount=31;
+}
+if(month==1)
+{
+	if (leapYear(year)){
+	daycount=29;
+	}
+	else {
+	daycount=28;
+	}
+}
+var mm = monthNames[month];
+var j;
+var columns;
+var monthnum=month+1;
+var monthstr=monthnum;
+if (monthnum<10){monthstr="0"+monthstr;}
+var startdate_null=monthstr+"/"+"01/"+"/"+year;
+var enddate_null=+monthstr+"/"+daycount+"/"+year;
+startDATE_global=new Date(startdate_null);
+stopDate_global=new Date(enddate_null);
+var startdate_s=new Date(startdate_null);
+var stopdate_s=new Date(enddate_null);
+getDates(startdate_s,stopdate_s,0);
+$("button").click(function(){
+$("#tablehead").empty();
+$("#tablebody").empty();
+var from_date=$( "#datepicker_fromdate" ).val();
+var to_date=$( "#datepicker_todate" ).val();
+var startdate=new Date(from_date);
+var enddate=new Date(to_date);
+getDates(startdate, enddate,1);
+});
+}
+function getDates(startDate, stopDate,num) {
+    var daystring,d1,counter;
+    var hearstring="";
+    var currentDate = startDate;
+    counter=0;
+    while (currentDate <= stopDate) {
+    var monthname=monthNames[currentDate.getMonth()];
+    var daynum=currentDate.getDate();
+        daystring=monthname+" "+daynum;
+        hearstring=hearstring+"<th>"+daystring+"</th>";
+        d1=currentDate.getDate()+1;
+        currentDate.setDate(d1);
+        counter=counter+1;
+    }  
+    hearstring="<tr><th>Emp-ID</th><th>Emp Name</th>"+hearstring+"</tr>";
+    $(hearstring).appendTo("#listManager_Pending thead");
+    GetCurrentUsers(counter,num);
+    }
+    function GetCurrentUsers(counter,num) {		
+		var siteurl = _spPageContextInfo.webAbsoluteUrl; 
+        $.ajax({  
+            url: siteurl + "/_api/web/currentuser",  
+            method: "GET",
+            async: false,  
+            headers: { "Accept": "application/json; odata=verbose" },  
+            success: function (data) {  
+                var items = data.d;				  
+				userEmail = items.Email; 
+				getuserid(userEmail,counter,num);            
+            },  
+            error: function (data) {  
+                alert("Ooops, an error occured in fetching email. Please try again");  
+            }  
+        });  
+    }
+function getuserid(userEmail,counter,num) { 
+		
+		var siteurl = _spPageContextInfo.webAbsoluteUrl; 
+		var k=0;
+		var userleavedata;
+		var rows;
+        $.ajax({  
+            url: siteurl + "/_api/web/lists/getbytitle('UserDetail')/items?$select=Name1,Official_x0020_Email_x0020_ID,Team_x0020_Name,Designation,Reportstoemail/EMail,LinkTitle&$expand=Reportstoemail&$filter=Reportstoemail/EMail eq '"+userEmail+"'",  
+            method: "GET",
+            async: false,  
+            headers: { "Accept": "application/json; odata=verbose" },  
+            success: function (data) {  
+                 var items = data.d.results; 
+				 
+				 for (var i = 0; i < items.length; i++) { 
+					var teamSRID = items[i].LinkTitle; 
+					var empname=items[i].Name1;
+					var teamname=items[i].Team_x0020_Name;
+					rows="";
+				//syncdata(teamSRID);
+			 //getAttendance(teamSRID,empname,teamname);
+			 var daystring;
+			 var currentDate;
+			 var stopDate; 
+			 if(num==1){
+			 currentDate=new Date($( "#datepicker_fromdate" ).val());
+			 stopDate=new Date($( "#datepicker_todate" ).val());
+			 startDATE_global=new Date($( "#datepicker_fromdate" ).val());
+			 stopDate_global=new Date($( "#datepicker_todate" ).val());
+			 }
+			 if(num==0)
+			 {
+			 currentDate=new Date(startDATE_global);
+			 stopDate=new Date(stopDate_global);
+			 }
+			 var rows="";
+			 while (currentDate <= stopDate) {
+   			 var monthname=monthNames[currentDate.getMonth()];
+    		 var daynum=currentDate.getDate();
+       		 daystring=monthname+daynum;
+       		 var rowsdup;
+       		//identify weekend
+       		var weekday=currentDate.getDay();
+       		if(weekday==0||weekday==6)
+       		{
+       			 rows=rows+"<td id='"+teamSRID+daystring+"'style='background-color: red; color: white;'>Weekend"+"</td>";
+
+       		}
+       		if(weekday>=1&&weekday<=5)
+       		{
+       			
+       			rowsdup=rows+"<td id='"+teamSRID+daystring+"'>"+"</td>";
+       			$.each(holiArray, function( index, value )
+       		{
+       		if(value<=currentDate&&value>=currentDate)
+       		{
+       			rowsdup=rows+"<td id='"+teamSRID+daystring+"'style='background-color: orange; color: white;'>Holiday"+"</td>";
+
+       		}
+       		});
+       		rows=rowsdup;
+       		}
+       		
+       		 
+       		 d1=currentDate.getDate()+1;
+       		 currentDate.setDate(d1);
+       		 counter=counter+1;
+    }
+			rows="<tr><td>"+teamSRID+"</td><td>"+empname+"</td>"+rows+"</tr>";
+			
+			  $(rows).appendTo("#listManager_Pending tbody");
+			  getleavedetails(teamSRID,empname,teamname);
+			 }              
+            },  
+            error: function (data) {  
+                alert("Ooops, an error occured in fetching employee ID. Please try again");  
+            }  
+        });  
+    }
+    
+   
+  
+function getleavedetails(teamSRID,empname,teamname)
+{
+	var siteurl = _spPageContextInfo.webAbsoluteUrl;
+		var userId = _spPageContextInfo.userId; 	
+        $.ajax({  
+        	
+            url: siteurl + "/_api/web/lists/getbytitle('Leave_Mgmt')/items?$select=ID,USer_Id,Leave_Type,From_Date,Status,To_Date,Approver_Mngr/Title, Author/Title&$expand=Approver_Mngr,Author&$filter=(From_Date ge datetime'"+startDATE_global.toISOString()+"') and (From_Date le datetime'"+stopDate_global.toISOString()+"') and (USer_Id eq '"+teamSRID+"')" ,  
+            method: "GET",
+            async: false,  
+            headers: { "Accept": "application/json; odata=verbose" },  
+            success: function (data) {  
+                var items = data.d.results;  
+            	for (var i = 0; i < items.length; i++) {  
+					var s_Leave_Type = items[i].Leave_Type;
+					sfrom_date=items[i].From_Date;
+					from_date=new Date(sfrom_date);
+					sto_date=items[i].To_Date;
+					to_date=new Date(sto_date);
+					var status=items[i].Status;
+																
+			if(status!="Reject"){
+			while (from_date <= to_date) {
+   			 var monthname=monthNames[from_date.getMonth()];
+    		 var daynum=from_date.getDate();
+       		 daystring=monthname+daynum;
+       		 var tagid=teamSRID+daystring;
+       		 d1=from_date.getDate()+1;
+       		 from_date.setDate(d1);
+       		 var appendtext=s_Leave_Type+", "+status;
+       		 $("#"+tagid).text(appendtext);
+       		 if(status=='Approve')
+       		 {
+       		 	   $("#"+tagid).css("background-color","green");  
+       		 	   $("#"+tagid).css("color","white");  		 
+       		 }
+       		 if(status=='Pending')
+       		 {
+       		 	   $("#"+tagid).css("background-color","blue");
+       		 	   $("#"+tagid).css("color","white");  	    		 
+       		 }
+
+       		} 
+    }
+    }
+
+			},
+            error: function (error) {  
+                alert("Ooops, an error occured. Please try again");  
+            }  
+        });  
+
+}
+var holiArray = [];
+	function getHolidays(){
+		$.ajax({  
+            url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getbytitle('Leave_Chart')/items?$select=L_Type,Count,H_Date&$filter=L_Type eq 'HL'",  
+            method: "GET",
+            async: false,  
+            headers: { "Accept": "application/json; odata=verbose" },  
+            success: function (data) {  	
+                var items = data.d.results;  
+                for (var i = 0; i < items.length; i++) {  
+					var count = items[0].Count;
+					var hDate = new Date(items[i].H_Date);
+					hDate=hDate.toLocaleDateString();
+					parts=hDate.split("/");
+					hDate=parts[1]+"/"+parts[0]+"/"+parts[2];
+					var localdate=new Date(hDate);
+					holiArray.push(localdate);
+				}
+            },  
+            error: function (data) {  
+                alert("Ooops, an error occured. Please try again");  
+            }  
+        });
+	}
+
+
+function leapYear(year)
+{
+  return ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0);
+}
+</script>
+<style>
+	table {
+		border-collapse: collapse;
+		border: 1px solid gray;
+	}
+
+	 th {
+		border: 1px solid gray;
+		color:white!important;
+		background-color:#00a1de!important;
+		padding: 10px 8px 10px 8px!important;
+		
+	}
+	td
+	{
+		border: 1px solid gray;
+		color:black;
+		background-color:white;
+		line-height: 14px; !important
+		Height: 3px; !important
+	}
+	.ms-webpartPage-root { border-spacing: 10px !important; padding:10px !important;}
+ 	.ms-webpartzone-cell {padding:20px !important;}
+
+	div.hidden
+	{
+	   display: none
+	}
+	
+	input[type=button]
+	{
+		background-color: #4CAF50;
+		border: none;
+		color: white;
+		padding: 10px;
+		text-decoration: none;
+		margin: 4px 2px;
+		cursor: pointer;
+	}
+	
+	.tablesorter thead .disabled {display: none}
+</style>
+<div>
+<p>Date: <input type="text" id="datepicker_fromdate"></p>                   <p>Date: <input type="text" id="datepicker_todate"></p> <div id="submit_button"><button type="button">Submit</button></div>
+
+
+<div>
+<div id="tab"> ​<br/>
+	<h4>Team Calendar</h4>
+	   <table id="listManager_Pending" cellspacing="0px" cellpadding="20px" text-align="center" class="table table-responsive"> 
+		  <thead id="tablehead"> 
+			
+		  </thead> 
+		  <tbody id="tablebody">
+			 
+		  </tbody> 
+	   </table> 
+	</div>	
+
+
+
+
+
+
